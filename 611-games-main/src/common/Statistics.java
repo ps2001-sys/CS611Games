@@ -27,10 +27,11 @@ public class Statistics {
         }
 
         playerStats.gamesPlayed++;
+        playerStats.totalTimeMs += timeMs;  // ← FIXED: Track time for all games
+        playerStats.totalMoves += moves;     // ← FIXED: Track moves for all games
+
         if (won) {
             playerStats.gamesWon++;
-            playerStats.totalMoves += moves;
-            playerStats.totalTimeMs += timeMs;
         }
     }
 
@@ -46,8 +47,12 @@ public class Statistics {
             return playerName + ": No games played yet.";
         }
 
-        double avgMoves = playerStats.gamesWon == 0 ? 0 : (double) playerStats.totalMoves / playerStats.gamesWon;
-        double avgTimeSec = playerStats.gamesWon == 0 ? 0 : (double) playerStats.totalTimeMs / playerStats.gamesWon / 1000.0;
+        // ← FIXED: Average across all games, not just wins
+        double avgMoves = playerStats.gamesPlayed == 0 ? 0
+                : (double) playerStats.totalMoves / playerStats.gamesPlayed;
+
+        double avgTimeSec = playerStats.gamesPlayed == 0 ? 0
+                : (double) playerStats.totalTimeMs / playerStats.gamesPlayed / 1000.0;
 
         return String.format(
                 "%s's stats: Games played: %d, Games won: %d, Average moves: %.2f, Average time: %.2fs",

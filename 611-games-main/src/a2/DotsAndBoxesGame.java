@@ -77,6 +77,7 @@ public class DotsAndBoxesGame implements Game {
         DBGrid grid = new DBGrid(rules.rows, rules.cols);
         int currentPlayer = 1;
         long startNs = System.nanoTime();
+        int totalMoves = 0;  // ← FIXED: Added move counter
 
         while (true) {
             // Render board
@@ -92,17 +93,17 @@ public class DotsAndBoxesGame implements Game {
 
                 if (s1 == s2) {
                     ui.println(ui.bold("Tie! Final: " + s1 + "-" + s2));
-                    // Record ties as no wins for either player
-                    stats.recordGame(p1.getName(), false, 0, durMs / 2);
-                    stats.recordGame(p2.getName(), false, 0, durMs / 2);
+                    // ← FIXED: Record moves and time for both players in a tie
+                    stats.recordGame(p1.getName(), false, totalMoves / 2, durMs / 2);
+                    stats.recordGame(p2.getName(), false, totalMoves / 2, durMs / 2);
                 } else {
                     String winner = (s1 > s2) ? p1.getName() : p2.getName();
                     String loser = (s1 > s2) ? p2.getName() : p1.getName();
                     ui.println(ui.bold("Winner: " + winner + "  Final: " + s1 + "-" + s2));
 
-                    // Record game results
-                    stats.recordGame(winner, true, 0, durMs);
-                    stats.recordGame(loser, false, 0, durMs);
+                    // ← FIXED: Record actual move count and time for both players
+                    stats.recordGame(winner, true, totalMoves, durMs);
+                    stats.recordGame(loser, false, totalMoves, durMs);
                 }
 
                 // Display current statistics
@@ -167,6 +168,7 @@ public class DotsAndBoxesGame implements Game {
             }
 
             boolean completedBox = grid.applyEdge(move, currentPlayer);
+            totalMoves++;  // ← FIXED: Increment move counter
 
             // Switch players (unless they completed a box and get another turn)
             if (!(completedBox && rules.extraTurnOnBox)) {
