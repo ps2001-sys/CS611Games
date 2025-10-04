@@ -4,8 +4,8 @@ import a1.SlidingPuzzleGame;
 import a2.DotsAndBoxesGame;
 
 /**
- * Top-level menu for the CS611 Games project.
- * Allows users to select between games and toggle color display.
+ * Main menu for the CS611 Games project.
+ * Lets the user pick a game or toggle color mode.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
@@ -14,38 +14,36 @@ public class Menu {
     private final TextUI ui = new TextUI();
 
     /**
-     * Start the interactive menu system.
-     * Displays options and processes user choices.
+     * Starts the menu and handles user choices until they quit.
      */
     public void start() {
         ui.println(ui.bold("-- CS611 Games --"));
 
         while (true) {
-            ui.println("\nChoose: [1] A1 Sliding Puzzle  [2] A2 Dots&Boxes  [3] Toggle Color  [q] Quit");
+            ui.println("\nChoose an option:");
+            ui.println("  [1] Play Sliding Puzzle (A1)");
+            ui.println("  [2] Play Dots & Boxes (A2)");
+            ui.println("  [3] Toggle Color Display");
+            ui.println("  [q] Quit");
             ui.print("> ");
+
             String choice = ui.nextLine().trim();
 
             if (choice.equalsIgnoreCase("q")) {
-                ui.println("Bye!");
+                ui.println("Goodbye!");
                 return;
             }
 
-            switch (choice) {
-                case "1":
-                    new SlidingPuzzleGame(ui).start();
-                    break;
-
-                case "2":
-                    new DotsAndBoxesGame(ui).start();
-                    break;
-
-                case "3":
-                    ui.setColor(!ui.isColor());
-                    ui.println("Color: " + (ui.isColor() ? "ON" : "OFF"));
-                    break;
-
-                default:
-                    ui.println(ui.red("Invalid choice."));
+            if (choice.equals("1")) {
+                new SlidingPuzzleGame(ui).start();
+            } else if (choice.equals("2")) {
+                new DotsAndBoxesGame(ui).start();
+            } else if (choice.equals("3")) {
+                boolean newColorSetting = !ui.isColor();
+                ui.setColor(newColorSetting);
+                ui.println("Color is now " + (newColorSetting ? "ON" : "OFF") + ".");
+            } else {
+                ui.println(ui.red("That’s not a valid choice. Please try again."));
             }
         }
     }
