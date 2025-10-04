@@ -4,56 +4,91 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Statistics tracker for player performance across multiple games.
- * Tracks wins, losses, total moves, and total time for each player.
+ * Hey there! This keeps score for players over a bunch of games.
+ * We track wins, moves, and how long they took each time.
  *
- * Author: Zhuojun Lyu & Priyanshu Singh
- * Date: 2025-01-05
+ * Written by: Zhuojun Lyu & Priyanshu Singh
+ * When: 2025-01-05
  */
 public class Statistics {
-    private final Map<String, PlayerStats> stats = new HashMap<>();
+
+    // Map to hold each player's stats — easy to get and update.
+    private final Map<String, PlayerStats> playerStatsMap = new HashMap<>();
 
     /**
-     * Record a game result for a player
+     * Call this whenever a player finishes a game.
+     * We'll update their stats accordingly.
+     *
+     * @param playerName - who played
+     * @param won - did they win?
+     * @param moves - how many moves did they make?
+     * @param timeMs - how long did it take in milliseconds?
      */
-    public void recordGame(String playerName, boolean won, int moves, long timeMs) {
-        PlayerStats ps = stats.computeIfAbsent(playerName, k -> new PlayerStats());
-        ps.gamesPlayed++;
-        if (won) ps.wins++;
-        ps.totalMoves += moves;
-        ps.totalTime += timeMs;
-    }
+    public void addGameResult(String playerName, boolean won, int moves, long timeMs) {
+        PlayerStats stats = playerStatsMap.computeIfAbsent(playerName, k -> new PlayerStats());
 
-    /**
-     * Get statistics for a specific player
-     */
-    public String getStats(String playerName) {
-        PlayerStats ps = stats.get(playerName);
-        if (ps == null || ps.gamesPlayed == 0) {
-            return playerName + ": No games played yet.";
+        // One more game for this player!
+        stats.gamesPlayed++;
+
+        // If they won, give ‘em credit!
+        if (won) {
+            stats.wins++;
         }
-        double avgMoves = (double) ps.totalMoves / ps.gamesPlayed;
-        double avgTime = (double) ps.totalTime / ps.gamesPlayed;
-        return String.format("%s: Games=%d, Wins=%d, Avg Moves=%.1f, Avg Time=%.0fms",
-                playerName, ps.gamesPlayed, ps.wins, avgMoves, avgTime);
+
+        // Add up moves and time for averages later
+        stats.totalMoves += moves;
+        stats.totalTimeMs += timeMs;
     }
 
     /**
-     * Get all player statistics
+     * This is your go-to for seeing how a player is doing.
+     * Pretty straightforward summary.
+     *
+     * @param playerName - the player you want info on
+     * @return a nice, easy-to-read stats summary
      */
-    public String getAllStats() {
-        if (stats.isEmpty()) return "No statistics available.";
-        StringBuilder sb = new StringBuilder("=== Player Statistics ===\n");
-        for (String name : stats.keySet()) {
-            sb.append(getStats(name)).append("\n");
+    public String getPlayerStats(String playerName) {
+        PlayerStats stats = playerStatsMap.get(playerName);
+
+        if (stats == null || stats.gamesPlayed == 0) {
+            return playerName + " hasn’t hit the leaderboard yet — no games played.";
         }
-        return sb.toString();
+
+        double avgMoves = (double) stats.totalMoves / stats.gamesPlayed;
+        double avgTime = (double) stats.totalTimeMs / stats.gamesPlayed;
+
+        String gameWord = stats.gamesPlayed > 1 ? "games" : "game";
+
+        return String.format(
+                "%s played %d %s, winning %d times. Average moves: %.1f, average time: %.0f ms.",
+                playerName, stats.gamesPlayed, gameWord, stats.wins, avgMoves, avgTime
+        );
     }
 
+    /**
+     * Want to see how *everyone* is doing? This spits out everyone's stats.
+     *
+     * @return all players’ summaries, nicely formatted
+     */
+    public String getAllPlayerStats() {
+        if (playerStatsMap.isEmpty()) {
+            return "Nothing to show here yet — no games recorded!";
+        }
+
+        StringBuilder report = new StringBuilder("=== All Player Stats ===\n");
+
+        for (String playerName : playerStatsMap.keySet()) {
+            report.append(getPlayerStats(playerName)).append("\n");
+        }
+
+        return report.toString();
+    }
+
+    // This little helper class just holds stats for one player.
     private static class PlayerStats {
         int gamesPlayed = 0;
         int wins = 0;
         int totalMoves = 0;
-        long totalTime = 0;
+        long totalTimeMs = 0;
     }
 }
