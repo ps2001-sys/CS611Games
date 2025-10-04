@@ -1,0 +1,142 @@
+CS611 Games Project – Sliding Puzzle (A1) & Dots and Boxes (A2)
+
+Name: Zhuojun Lyu
+Email: lzj2729@bu.edu
+
+Student ID: U06761622
+
+📁 Files
+Engine (Common Framework)
+Game.java – Common interface for all games (start and getName).
+TextUI.java – Handles terminal input/output with color support.
+Menu.java – Unified text menu to select between A1 and A2.
+
+Common
+Player.java – Represents player information.
+
+A1 – Sliding Puzzle
+Board.java – Stores tiles in a 2D array, tracks blank position, validates and performs moves, and checks if solved.
+Tile.java – Represents a single numbered tile (0 means blank).
+Randomizer.java – Uses “blank-walk” shuffle to guarantee solvable random configurations.
+SlidingPuzzleGame.java – Main logic for terminal gameplay, including input, commands, timing, and difficulty.
+
+A2 – Dots and Boxes
+DBGrid.java – Stores edge ownership and box ownership, updates after each move.
+DBMove.java – Represents a single move (edge placement).
+Rules.java – Holds board dimensions and rule configuration.
+DotsAndBoxesGame.java – Two-player terminal version with color rendering, score tracking, and winner detection.
+
+💡 Notes
+
+Solvable Shuffling (A1):
+The puzzle uses a blank-tile random walk to shuffle from a solved state, ensuring every generated board is solvable.
+
+Difficulty Levels (A1):
+Difficulty determines how many shuffle steps are applied (Easy/Normal/Hard).
+
+Colorful Rendering (A2):
+Terminal rendering supports colors: Player 1 (Red), Player 2 (Blue).
+
+Error Handling:
+Input validation ensures all user entries (names, moves, commands) are valid and meaningful.
+
+Reusability:
+Shared design principles allow both A1 and A2 to reuse TextUI and Player classes.
+
+Extensibility:
+The structure allows adding more games easily under the engine and menu system.
+
+⚙️ How to Compile and Run
+Compile
+
+From the project root:
+javac -d out -cp src src/**/*.java
+
+Run
+java -cp out Main
+
+In Menu:
+Choose A1: Sliding Puzzle → terminal-based number sliding puzzle.
+Choose A2: Dots and Boxes → two-player edge-connection game.
+
+▶️ Game Descriptions
+🧩 Sliding Puzzle (A1)
+
+Goal: Arrange tiles in ascending order with the blank in the last cell.
+
+Commands:
+<number>  Slide tile into blank
+n         New random board (same settings)
+r         Reset and reshuffle
+h         Show help
+q         Quit game
+
+
+Features:
+Configurable size (2×2 to 10×10)
+Guaranteed solvable shuffle
+Difficulty levels (Easy/Normal/Hard)
+Move counter and timer
+
+Example Output:
+== A1: Sliding Puzzle ==
+Welcome! This is a single-player sliding puzzle running in the terminal.
+
++----+----+----+
+|  3 |  8 |  5 |
++----+----+----+
+|  7 |    |  4 |
++----+----+----+
+|  6 |  2 |  1 |
++----+----+----+
+
+Enter a tile number to slide (or 'n','r','h','q'):
+> 2
+
+🔷 Dots and Boxes (A2)
+
+Goal: Players take turns drawing edges. Completing a box earns a point and an extra turn.
+
+Commands:
+H r c   → Horizontal edge at (r,c)
+V r c   → Vertical edge at (r,c)
+q       → Quit game
+
+
+Features:
+Player name validation (no duplicates)
+Colored edges (P1 = red, P2 = blue)
+Score display each round
+Automatic winner detection
+Supports different board sizes
+
+Example Output:
+
+-- A2: Dots & Boxes --
+Enter Player 1 name (default P1):
+> Alice
+Enter Player 2 name (default P2):
+> Bob
+Rows (>=1, default 2): 2
+Cols (>=1, default 2): 2
+
+Scores: Alice=0  Bob=0
+Alice turn. Enter: H r c or V r c (q to quit)
+> H 0 0
+
+🧮 Input / Output Summary
+Game	Input Example	Output Example
+Sliding Puzzle	2	Moves tile #2 into blank
+Dots & Boxes	V 1 0	Draws a vertical edge at (1,0)
+
+🧱 Design Highlights
+OOP Principles: Every component (game, board, player) encapsulated into its own class.
+Reusability: Shared TextUI between games.
+Extendibility: Easy to add GUI or AI in the future.
+Error Resilience: Invalid inputs are handled gracefully.
+Polished Output: ASCII grid for both games (A1 boxed board, A2 line grid).
+
+📖 References
+BU CS611 Assignment 1 & 2 Specifications
+Java 8 Official Documentation
+Class Notes on OOP and Game Loops
