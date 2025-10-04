@@ -1,7 +1,12 @@
-// Entry point of the project.
-// Simply launches the top-level menu, does not handle logic itself.
+/**
+ * Entry point for the CS611 Games project.
+ * Launches the top-level menu without handling any game logic.
+ *
+ * Author: Zhuojun Lyu and Priyanshu Singh
+ * Date: 2025-01-05
+ */
 public class Main {
     public static void main(String[] args) {
-        new engine.Menu().start();  // Start the text-based menu
+        new engine.Menu().start();
     }
 }

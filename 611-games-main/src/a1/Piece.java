@@ -1,14 +1,22 @@
 package a1;
 
 /**
- * Abstract class for puzzle pieces.
- * Can be extended for different piece types.
- * In this puzzle, implemented by Tile.
+ * Abstract base class for puzzle pieces.
+ * Can be extended for different piece types in future puzzle variants.
+ * In the sliding puzzle, this is implemented by the Tile class.
+ *
+ * Author: Zhuojun Lyu and Priyanshu Singh
+ * Date: 2025-01-05
  */
 public abstract class Piece {
-    // Returns true if this is the blank (empty) piece
+    /**
+     * Check if this piece is blank (empty space).
+     */
     public abstract boolean isBlank();
 
-    // Returns the numeric value of the piece (0 means blank)
+    /**
+     * Get the numeric value of this piece.
+     * Returns 0 for blank pieces.
+     */
     public abstract int value();
 }

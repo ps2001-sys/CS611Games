@@ -1,14 +1,21 @@
 package common;
 
 /**
- * Simple player representation.
- * Just stores the player's name, and use toString to return the name
+ * Represents a player in the game.
+ * Stores player name with proper encapsulation.
+ *
+ * Author: Zhuojun Lyu and Priyanshu Singh
+ * Date: 2025-01-05
  */
 public class Player {
-    public final String name;
+    private final String name;
 
     public Player(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

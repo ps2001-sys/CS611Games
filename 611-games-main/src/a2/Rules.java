@@ -1,20 +1,36 @@
 package a2;
 
 /**
- * Rules/config for the game
- * For a2 we only need rows/cols and the standard
- * rule "extra turn when you complete a box"
+ * Configuration and rules for Dots and Boxes game.
+ * Defines board dimensions and game rules.
+ *
+ * Author: Zhuojun Lyu and Priyanshu Singh
+ * Date: 2025-01-05
  */
 public class Rules {
+    private static final int MIN_SIZE = 1;
+
     public final int rows;
     public final int cols;
     public final boolean extraTurnOnBox = true;
-    //size have to > 1 * 1 or throw exception
+
+    /**
+     * Create rules with specified board dimensions.
+     * @param rows number of box rows (minimum 1)
+     * @param cols number of box columns (minimum 1)
+     */
     public Rules(int rows, int cols) {
-        if (rows < 1 || cols < 1) throw new IllegalArgumentException("min 1x1");
+        if (rows < MIN_SIZE || cols < MIN_SIZE) {
+            throw new IllegalArgumentException("Minimum board size is " + MIN_SIZE + "x" + MIN_SIZE);
+        }
         this.rows = rows;
         this.cols = cols;
     }
-    // initialize
-    public static Rules standard(int r, int c) { return new Rules(r, c); }
+
+    /**
+     * Create standard rules with given dimensions.
+     */
+    public static Rules standard(int r, int c) {
+        return new Rules(r, c);
+    }
 }

@@ -3,23 +3,48 @@ package a1;
 import java.util.Random;
 
 /**
- * Shuffle generator for the puzzle.
- * in this class we use "blank walk" method: move the blank randomly many times to make sure the puzzle is solvable
+ * Shuffle generator for the sliding puzzle.
+ * Uses a "blank walk" method: randomly moves the blank tile many times
+ * to ensure the generated puzzle is always solvable.
+ *
+ * Author: Zhuojun Lyu and Priyanshu Singh
+ * Date: 2025-01-05
  */
 public class Randomizer {
     private final Random rng = new Random();
-    //we use "blank walk" method: move the blank randomly many times to make sure the puzzle is solvable
-    public void shuffle(Board b, int steps){
-        int lastDr=0,lastDc=0;
-        for(int i=0;i<steps;i++){
-            int[][] dirs={{1,0},{-1,0},{0,1},{0,-1}};
-            int tries=0;
-            while(tries++<10){
-                int[] d = dirs[rng.nextInt(4)];
-                // Avoid immediate undo of last move
-                if (d[0]==-lastDr && d[1]==-lastDc) continue;
-                if (b.moveBlank(d[0], d[1])) {
-                    lastDr=d[0]; lastDc=d[1];
+
+    // Possible movement directions (down, up, right, left)
+    private static final int[][] DIRECTIONS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    private static final int MAX_RETRIES = 10;
+
+    /**
+     * Shuffle the board by performing random blank moves.
+     * This guarantees a solvable configuration.
+     *
+     * @param board the board to shuffle
+     * @param steps number of random moves to perform
+     */
+    public void shuffle(Board board, int steps) {
+        int lastDr = 0, lastDc = 0;
+
+        for (int i = 0; i < steps; i++) {
+            int tries = 0;
+
+            // Try to make a valid move (avoid undoing the last move)
+            while (tries++ < MAX_RETRIES) {
+                int[] direction = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
+                int dr = direction[0];
+                int dc = direction[1];
+
+                // Avoid immediately undoing the last move
+                if (dr == -lastDr && dc == -lastDc) {
+                    continue;
+                }
+
+                // Attempt the move
+                if (board.moveBlank(dr, dc)) {
+                    lastDr = dr;
+                    lastDc = dc;
                     break;
                 }
             }
