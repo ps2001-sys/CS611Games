@@ -1,142 +1,211 @@
-CS611 Games Project – Sliding Puzzle (A1) & Dots and Boxes (A2)
+# CS611-Assignment < #2 >
+## < DOTS AND BOXES >  and  < SLIDING PAZZLE >
 
-Name: Zhuojun Lyu
-Email: lzj2729@bu.edu
+- Name: Zhuojun Lyu	
+- Email: lzj2729@bu.edu
+- Student ID: U06761622
 
-Student ID: U06761622
-
-📁 Files
-Engine (Common Framework)
-Game.java – Common interface for all games (start and getName).
-TextUI.java – Handles terminal input/output with color support.
-Menu.java – Unified text menu to select between A1 and A2.
-
-Common
-Player.java – Represents player information.
-
-A1 – Sliding Puzzle
-Board.java – Stores tiles in a 2D array, tracks blank position, validates and performs moves, and checks if solved.
-Tile.java – Represents a single numbered tile (0 means blank).
-Randomizer.java – Uses “blank-walk” shuffle to guarantee solvable random configurations.
-SlidingPuzzleGame.java – Main logic for terminal gameplay, including input, commands, timing, and difficulty.
-
-A2 – Dots and Boxes
-DBGrid.java – Stores edge ownership and box ownership, updates after each move.
-DBMove.java – Represents a single move (edge placement).
-Rules.java – Holds board dimensions and rule configuration.
-DotsAndBoxesGame.java – Two-player terminal version with color rendering, score tracking, and winner detection.
-
-💡 Notes
-
-Solvable Shuffling (A1):
-The puzzle uses a blank-tile random walk to shuffle from a solved state, ensuring every generated board is solvable.
-
-Difficulty Levels (A1):
-Difficulty determines how many shuffle steps are applied (Easy/Normal/Hard).
-
-Colorful Rendering (A2):
-Terminal rendering supports colors: Player 1 (Red), Player 2 (Blue).
-
-Error Handling:
-Input validation ensures all user entries (names, moves, commands) are valid and meaningful.
-
-Reusability:
-Shared design principles allow both A1 and A2 to reuse TextUI and Player classes.
-
-Extensibility:
-The structure allows adding more games easily under the engine and menu system.
-
-⚙️ How to Compile and Run
-Compile
-
-From the project root:
-javac -d out -cp src src/**/*.java
-
-Run
-java -cp out Main
-
-In Menu:
-Choose A1: Sliding Puzzle → terminal-based number sliding puzzle.
-Choose A2: Dots and Boxes → two-player edge-connection game.
-
-▶️ Game Descriptions
-🧩 Sliding Puzzle (A1)
-
-Goal: Arrange tiles in ascending order with the blank in the last cell.
-
-Commands:
-<number>  Slide tile into blank
-n         New random board (same settings)
-r         Reset and reshuffle
-h         Show help
-q         Quit game
+- Name: Priyanshu Singh	
+- Email: ps2001@bu.edu
+- Student ID: U73441029
 
 
-Features:
-Configurable size (2×2 to 10×10)
-Guaranteed solvable shuffle
-Difficulty levels (Easy/Normal/Hard)
-Move counter and timer
+## Files
 
-Example Output:
+Project Structure
+CS611DotandBoxes
+├── src
+│   ├─ Main.java                        
+│   ├─ engine
+│   │   ├─ Game.java                    
+│   │   ├─ TextUI.java                  
+│   │   └─ Menu.java    
+│   │
+│   ├─ common
+│   │   └─ Player.java     
+│   │
+│   ├─ a1                       
+│   │   ├─ Piece.java
+│   │   ├─ Tile.java
+│   │   ├─ Board.java
+│   │   ├─ Randomizer.java
+│   │   └─ SlidingPuzzleGame.java
+│   │
+│   ├─ a2                                Dots and Boxes
+│   │   ├─ DBMove.java
+│   │   ├─ Rules.java
+│   │   ├─ DBGrid.java
+│   │   └─ DotsAndBoxesGame.java
+
+a1:
+These five classes are part of the Sliding Puzzle game:
+SlidingPuzzleGame.java: The main class that runs the Sliding Puzzle game, initializes the board, handles moves, and determines when the puzzle is solved.
+Board.java: Represents the puzzle grid; stores tile positions, checks for valid moves, and verifies the solved state.
+Tile.java: Defines individual puzzle tiles, their current and target positions.
+Piece.java: A helper class that encapsulates tile behavior and movement logic.
+Randomizer.java: Generates randomized but solvable board configurations at the start of the game.
+
+a2:
+These four classes form the Dots and Boxes game:
+DotsAndBoxesGame.java: The main controller class; manages player turns, validates moves, updates scores, and determines the winner.
+DBGrid.java: Represents the dots-and-boxes grid, tracking horizontal and vertical edges, filled boxes, and ownership.
+DBMove.java: Encapsulates a single player move, including coordinates, direction, and current player.
+Rules.java: Defines the core rule set — detects completed boxes, awards extra turns, and updates game state accordingly.
+
+common:
+These three classes are shared across both games:
+Player.java: Stores player information, including name, score, and player ID.
+InputValidator.java: Handles all user input validation for both games, ensuring valid coordinates and move formats.
+Statistics.java: Maintains global game statistics such as total matches, wins, moves, and average scores.
+
+engine:
+These three classes make up the shared game engine:
+Game.java: An abstract base class (or interface) that defines the common structure for all games, including initialization and game loop methods.
+Menu.java: Provides a textual game selection menu that allows the user to choose between the Sliding Puzzle and Dots and Boxes.
+TextUI.java: Implements a simple command-line interface for displaying boards, prompts, and results in text format.
+
+main.java: The program’s entry point. It launches the Menu class and initializes the selected game.
+
+## Notes
+
+1. Solvable Shuffling Strategy:
+For the Sliding Puzzle, the board shuffling is done by performing a number of valid random moves instead of random tile swaps.
+The number of shuffle moves depends on the difficulty level:
+Easy: 10 × number of tiles
+Normal: 20 × number of tiles
+Hard: 50 × number of tiles
+This approach guarantees that every generated puzzle configuration is always solvable and provides a scalable difficulty system.
+2. Configurable and Extensible Size:
+The Sliding Puzzle supports fully customizable board dimensions.
+Players can freely choose both rows (r) and columns (c) — for example, 4×5, 5×6, or any rectangular shape — not limited to square boards.
+The internal design automatically adapts to the specified size, and can theoretically scale to arbitrarily large grids
+3.Move Counter: A counter is maintained during gameplay to record how many moves the player took to solve the puzzle; it is reported upon completion.
+4. Shared Game Engine:
+Both Sliding Puzzle (Assignment 1) and Dots and Boxes (Assignment 2) are built upon a shared engine (engine/ and common/ packages).
+This structure demonstrates proper object-oriented design and allows easy addition of future games
+5. Statistics Tracking:
+The system records cumulative game statistics (wins, total plays, moves per game, etc.) for each player, stored via the Statistics class in the common package
+6. Colored Output:
+The game uses ANSI escape codes to display colored text in the console.
+This adds visual feedback for menus, player turns, and score highlights.
+(If colors don’t show on Windows CMD, run it in PowerShell or IntelliJ Terminal, which fully supports ANSI colors.)
+
+
+
+## How to compile and run
+
+1.Navigate to the source directory
+cd 611-games-main/src
+
+2.Compile all Java files (specify UTF-8 to avoid encoding errors)
+javac -encoding UTF-8 a1/*.java a2/*.java common/*.java engine/*.java Main.java
+
+3.Run the program
+java Main
+For example:
+ 
+
+
+## Input/Output Example
+
+Menu:
+Choose an option:
+  [1] Play Sliding Puzzle (A1)
+  [2] Play Dots & Boxes (A2)
+  [3] Toggle Color Display
+  [q] Quit
+> 1
+ 
+A1:
 == A1: Sliding Puzzle ==
 Welcome! This is a single-player sliding puzzle running in the terminal.
+Enter a tile number next to the blank to slide it. Type 'h' for help.
 
-+----+----+----+
-|  3 |  8 |  5 |
-+----+----+----+
-|  7 |    |  4 |
-+----+----+----+
-|  6 |  2 |  1 |
-+----+----+----+
-
-Enter a tile number to slide (or 'n','r','h','q'):
+Player name (default Player): 1
+Rows (>=2, default 3): 2
+Cols (>=2, default 3): 2
+Choose difficulty: [1] Easy  [2] Normal  [3] Hard
 > 2
++---+---+
+|    |  1 |
++---+---+
+|  3 |  2 |
++---+---+
 
-🔷 Dots and Boxes (A2)
+Enter a tile number to slide (or 'n'=new, 'r'=reset, 's'=stats, 'h'=help, 'q'=quit):
+> 1
++---+---+
+|  1 |    |
++---+---+
+|  3 |  2 |
++---+---+
 
-Goal: Players take turns drawing edges. Completing a box earns a point and an extra turn.
+Enter a tile number to slide (or 'n'=new, 'r'=reset, 's'=stats, 'h'=help, 'q'=quit):
+> 2
++---+---+
+|  1 |  2 |
++---+---+
+|  3 |    |
++---+---+
 
-Commands:
-H r c   → Horizontal edge at (r,c)
-V r c   → Vertical edge at (r,c)
-q       → Quit game
+Congrats, 1! You solved it.
+Stats: moves=2, time=3028ms
+ 
 
-
-Features:
-Player name validation (no duplicates)
-Colored edges (P1 = red, P2 = blue)
-Score display each round
-Automatic winner detection
-Supports different board sizes
-
-Example Output:
-
+A2:
 -- A2: Dots & Boxes --
-Enter Player 1 name (default P1):
-> Alice
-Enter Player 2 name (default P2):
-> Bob
-Rows (>=1, default 2): 2
-Cols (>=1, default 2): 2
+Rows (>=1, default 2): 1
+Cols (>=1, default 2): 1
+Player 1 name (default P1): 2
+Player 2 name (default P2): 1
++   +
 
-Scores: Alice=0  Bob=0
-Alice turn. Enter: H r c or V r c (q to quit)
++   +
+
+Scores: 2=0  1=0
+2 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
+> H 1 1
+Edge occupied or out of range.
++   +
+
++   +
+
+Scores: 2=0  1=0
+2 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
+> H 1 0
++   +
+
++---+
+
+Scores: 2=0  1=0
+1 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
+> V 1 0
+Edge occupied or out of range.
++   +
+
++---+
+
+Scores: 2=0  1=0
+1 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
+> V 0 1
++   +
+    |                                                                                                                                                                                                                               
++---+
+
+Scores: 2=0  1=0
+2 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
 > H 0 0
-
-🧮 Input / Output Summary
-Game	Input Example	Output Example
-Sliding Puzzle	2	Moves tile #2 into blank
-Dots & Boxes	V 1 0	Draws a vertical edge at (1,0)
-
-🧱 Design Highlights
-OOP Principles: Every component (game, board, player) encapsulated into its own class.
-Reusability: Shared TextUI between games.
-Extendibility: Easy to add GUI or AI in the future.
-Error Resilience: Invalid inputs are handled gracefully.
-Polished Output: ASCII grid for both games (A1 boxed board, A2 line grid).
-
-📖 References
-BU CS611 Assignment 1 & 2 Specifications
-Java 8 Official Documentation
-Class Notes on OOP and Game Loops
++---+
+    |                                                                                                                                                                                                                               
++---+
+Scores: 2=0  1=0
+1 turn. Enter: H r c  or  V r c   (s=stats, q=quit)
+> V 0 0
++---+
+| 2 |
++---+
+Scores: 2=0  1=1
+Winner: 1  Final: 0-1
+2's stats: Games played: 1, Games won: 0, Average moves: 4.00, Average time: 37.66s
+1's stats: Games played: 1, Games won: 1, Average moves: 4.00, Average time: 37.66s
+[1] Play again (same settings)  [2] Change settings  [3] Back to main
