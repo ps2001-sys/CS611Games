@@ -5,13 +5,14 @@ import engine.TextUI;
 import common.Player;
 import common.InputValidator;
 import java.util.Random;
+import common.Statistics;
 
 /**
  * Sliding Puzzle game implementation.
  * Extends the Game base class to provide sliding puzzle functionality.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class SlidingPuzzleGame extends Game {
     private SlidingPuzzleBoard board;
@@ -21,6 +22,8 @@ public class SlidingPuzzleGame extends Game {
     private int difficulty;
     private Random random;
 
+    private final Statistics stats;
+    
     // Difficulty settings
     private static final int EASY_MULTIPLIER = 10;
     private static final int NORMAL_MULTIPLIER = 20;
@@ -30,10 +33,11 @@ public class SlidingPuzzleGame extends Game {
      * Create a new Sliding Puzzle game.
      * @param ui The text UI for input/output
      */
-    public SlidingPuzzleGame(TextUI ui) {
+    public SlidingPuzzleGame(TextUI ui, Statistics stats) {  // ✅ 修改构造函数签名
         super(ui);
         this.validator = new InputValidator(ui);
         this.random = new Random();
+        this.stats = stats;
     }
 
     @Override
@@ -113,12 +117,16 @@ public class SlidingPuzzleGame extends Game {
     protected void handleGameEnd() {
         long duration = getGameDuration();
         Player player = getCurrentPlayer();
-
-        ui.println(ui.green("\n🎉 Congratulations, " + player.getName() + "! You solved the puzzle!"));
+        int moves = player.getScore();
+    
+        ui.println(ui.green("\n Congratulations, " + player.getName() + "! You solved the puzzle!"));
         ui.println("Final stats: " + player.getScore() + " moves in " + (duration / 1000) + " seconds");
 
-        // Record game
+    
+        // record game 
         player.recordGame(true, duration);
+        stats.recordGame(player.getName(), true, moves, duration);
+
         ui.println("\n" + player.getStatsSummary());
     }
 

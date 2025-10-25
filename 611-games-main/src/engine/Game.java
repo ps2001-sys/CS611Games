@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * Changed from interface to abstract class to provide common functionality.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public abstract class Game {
     protected TextUI ui;
@@ -97,7 +97,11 @@ public abstract class Game {
             }
 
             totalMoves++;
-            nextPlayer();
+
+            // only auto-switch turn if the subclass doesn't handle it itself
+            if (shouldAutoNextPlayer()) {
+                nextPlayer();
+            }
         }
 
         // Handle game end
@@ -171,6 +175,10 @@ public abstract class Game {
         ui.println("Help for " + getName());
         ui.println("This is a turn-based game.");
         ui.println("Type 'q' to quit at any time.");
+    }
+
+    protected boolean shouldAutoNextPlayer() {
+        return true; // default: keep auto-switching (for A1 & A3)
     }
 
     /**

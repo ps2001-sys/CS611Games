@@ -8,7 +8,7 @@ import common.Tile;
  * Extends the common Board class to provide sliding puzzle functionality.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class SlidingPuzzleBoard extends Board {
     private int blankRow;

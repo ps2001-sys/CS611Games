@@ -7,7 +7,7 @@ import java.util.*;
  * This demonstrates framework extensibility with AI opponents.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-06
+ * Date: 2025-10-25
  */
 public class QuoridorAI {
     private static final int MAX_DEPTH = 3;

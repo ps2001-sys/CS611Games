@@ -8,7 +8,7 @@ import common.Piece;
  * Each tile contains a numbered piece (or blank).
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class SlidingPuzzleTile extends Tile {
     private int value;  // The number on this tile (0 for blank)

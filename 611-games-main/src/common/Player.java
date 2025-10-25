@@ -10,7 +10,7 @@ import java.util.List;
  * Feel free to add more stats if you want,
  * or make it fancier for your own game use cases!
  *
- * Created by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
+ * Created by Zhuojun Lyu & Priyanshu Singh, 2025-10-25
  */
 public class Player {
 

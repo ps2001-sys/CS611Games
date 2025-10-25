@@ -1,16 +1,18 @@
 package a3;
 
+import engine.TextUI;
 import java.util.*;
 
 /**
  * Implements the rules and validation logic for Quoridor.
- * Updated to work with the new QuoridorBoard that extends Board.
+ * Updated to support diagonal jump decision when blocked by wall.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class QuoridorRules {
     private final QuoridorBoard board;
+    private final TextUI ui = new TextUI(); // for player interaction
 
     public QuoridorRules(QuoridorBoard board) {
         this.board = board;
@@ -20,257 +22,195 @@ public class QuoridorRules {
      * Validate a move from one position to another.
      */
     public Position validateMove(Position from, Position to, QuoridorBoard board, int playerIndex) {
-        // Check board boundaries
-        if (!isWithinBounds(to)) {
-            return null;
-        }
+        if (!isWithinBounds(to)) return null;
 
-        // Check if move is orthogonal (not diagonal for normal moves)
         int rowDiff = Math.abs(to.row - from.row);
         int colDiff = Math.abs(to.col - from.col);
 
-        // Normal move: one space orthogonally
+        // ----- Normal one-step orthogonal move -----
         if (rowDiff + colDiff == 1) {
-            // Check for walls blocking the path
-            if (board.isWallBlocking(from, to)) {
-                return null;
-            }
-
-            // Check if destination is occupied
-            if (board.isOccupied(to.row, to.col)) {
-                // Try to jump over the opponent
-                return calculateJumpPosition(from, to, board);
-            }
-
-            // Valid normal move
+            if (board.isWallBlocking(from, to)) return null;
+            if (board.isOccupied(to.row, to.col)) return calculateJumpPosition(from, to, board);
             return to;
         }
 
-        // Check for valid jump move (two spaces in same direction)
+        // ----- Jump (two steps) -----
         if ((rowDiff == 2 && colDiff == 0) || (rowDiff == 0 && colDiff == 2)) {
-            Position middle = new Position(
-                    (from.row + to.row) / 2,
-                    (from.col + to.col) / 2
-            );
-
-            // Middle position must be occupied by opponent
-            if (!board.isOccupied(middle.row, middle.col)) {
-                return null;
-            }
-
-            // Check no walls block the jump
-            if (board.isWallBlocking(from, middle) || board.isWallBlocking(middle, to)) {
-                return null;
-            }
-
-            // Destination must be free
-            if (board.isOccupied(to.row, to.col)) {
-                return null;
-            }
-
+            Position middle = new Position((from.row + to.row) / 2, (from.col + to.col) / 2);
+            if (!board.isOccupied(middle.row, middle.col)) return null;
+            if (board.isWallBlocking(from, middle) || board.isWallBlocking(middle, to)) return null;
+            if (board.isOccupied(to.row, to.col)) return null;
             return to;
         }
 
-        // Diagonal jump (when straight jump is blocked)
+        // ----- Diagonal move -----
         if (rowDiff == 1 && colDiff == 1) {
-            // Check if this is a valid diagonal jump situation
+            // Check horizontal-first and vertical-first diagonal logic
             Position horizontalFirst = new Position(from.row, to.col);
-            if (board.isOccupied(horizontalFirst.row, horizontalFirst.col) &&
-                    !board.isWallBlocking(from, horizontalFirst) &&
-                    !board.isWallBlocking(horizontalFirst, to)) {
-
-                // Check if straight jump would be blocked
-                Position beyondHorizontal = new Position(from.row, to.col + (to.col - from.col));
-                if (!isWithinBounds(beyondHorizontal) ||
-                        board.isWallBlocking(horizontalFirst, beyondHorizontal) ||
-                        board.isOccupied(beyondHorizontal.row, beyondHorizontal.col)) {
-
-                    if (!board.isOccupied(to.row, to.col)) {
-                        return to; // Valid diagonal jump
-                    }
-                }
-            }
-
-            // Check vertical then horizontal path
             Position verticalFirst = new Position(to.row, from.col);
-            if (board.isOccupied(verticalFirst.row, verticalFirst.col) &&
-                    !board.isWallBlocking(from, verticalFirst) &&
-                    !board.isWallBlocking(verticalFirst, to)) {
 
-                // Check if straight jump would be blocked
-                Position beyondVertical = new Position(to.row + (to.row - from.row), from.col);
-                if (!isWithinBounds(beyondVertical) ||
-                        board.isWallBlocking(verticalFirst, beyondVertical) ||
-                        board.isOccupied(beyondVertical.row, beyondVertical.col)) {
-
-                    if (!board.isOccupied(to.row, to.col)) {
-                        return to; // Valid diagonal jump
-                    }
-                }
-            }
+            if (isDiagonalValid(from, to, horizontalFirst, board)) return to;
+            if (isDiagonalValid(from, to, verticalFirst, board)) return to;
         }
 
-        return null; // Invalid move
+        return null;
     }
 
+    /**
+     * Calculate jump position, allowing diagonal choice if front is blocked.
+     */
     private Position calculateJumpPosition(Position from, Position to, QuoridorBoard board) {
         int rowDir = to.row - from.row;
         int colDir = to.col - from.col;
 
-        // Try straight jump first
+        // Straight jump position
         Position straightJump = new Position(to.row + rowDir, to.col + colDir);
 
-        if (isWithinBounds(straightJump) &&
-                !board.isWallBlocking(to, straightJump) &&
-                !board.isOccupied(straightJump.row, straightJump.col)) {
+        // If straight jump possible → allow it
+        if (isWithinBounds(straightJump)
+                && !board.isWallBlocking(to, straightJump)
+                && !board.isOccupied(straightJump.row, straightJump.col)) {
             return straightJump;
         }
 
-        // If straight jump is blocked, try diagonal jumps
+        // Straight jump blocked → try diagonal
         List<Position> diagonalOptions = new ArrayList<>();
 
-        if (rowDir != 0) {
-            // Moving vertically, try left and right diagonals
+        if (rowDir != 0) { // Moving vertically
             Position leftDiag = new Position(to.row, to.col - 1);
             Position rightDiag = new Position(to.row, to.col + 1);
-
-            if (isWithinBounds(leftDiag) && !board.isWallBlocking(to, leftDiag) &&
-                    !board.isOccupied(leftDiag.row, leftDiag.col)) {
-                diagonalOptions.add(leftDiag);
-            }
-            if (isWithinBounds(rightDiag) && !board.isWallBlocking(to, rightDiag) &&
-                    !board.isOccupied(rightDiag.row, rightDiag.col)) {
-                diagonalOptions.add(rightDiag);
-            }
-        } else {
-            // Moving horizontally, try up and down diagonals
+            if (isValidDiagonalOption(to, leftDiag, board)) diagonalOptions.add(leftDiag);
+            if (isValidDiagonalOption(to, rightDiag, board)) diagonalOptions.add(rightDiag);
+        } else { // Moving horizontally
             Position upDiag = new Position(to.row - 1, to.col);
             Position downDiag = new Position(to.row + 1, to.col);
-
-            if (isWithinBounds(upDiag) && !board.isWallBlocking(to, upDiag) &&
-                    !board.isOccupied(upDiag.row, upDiag.col)) {
-                diagonalOptions.add(upDiag);
-            }
-            if (isWithinBounds(downDiag) && !board.isWallBlocking(to, downDiag) &&
-                    !board.isOccupied(downDiag.row, downDiag.col)) {
-                diagonalOptions.add(downDiag);
-            }
+            if (isValidDiagonalOption(to, upDiag, board)) diagonalOptions.add(upDiag);
+            if (isValidDiagonalOption(to, downDiag, board)) diagonalOptions.add(downDiag);
         }
 
-        // For simplicity, return first available diagonal option
-        if (!diagonalOptions.isEmpty()) {
-            return diagonalOptions.get(0);
+        // If one diagonal is available → use it
+        if (diagonalOptions.size() == 1) return diagonalOptions.get(0);
+
+        // If both available → ask player
+        if (diagonalOptions.size() == 2) {
+            ui.println("\nDiagonal jump possible: Left or Right?");
+            ui.println("Enter L for Left or R for Right:");
+            ui.print("> ");
+            String choice = ui.nextLine().trim().toUpperCase();
+            if (choice.startsWith("L")) return diagonalOptions.get(0);
+            return diagonalOptions.get(1);
         }
 
-        return null; // No valid jump available
+        return null; // No valid jump
     }
 
+    /**
+     * Helper to check if a diagonal path is valid.
+     */
+    private boolean isValidDiagonalOption(Position from, Position to, QuoridorBoard board) {
+        return isWithinBounds(to)
+                && !board.isWallBlocking(from, to)
+                && !board.isOccupied(to.row, to.col);
+    }
+
+    /**
+     * Helper for diagonal validation (horizontal-first or vertical-first path).
+     */
+    private boolean isDiagonalValid(Position from, Position to, Position middle, QuoridorBoard board) {
+        return board.isOccupied(middle.row, middle.col)
+                && !board.isWallBlocking(from, middle)
+                && !board.isWallBlocking(middle, to)
+                && !board.isOccupied(to.row, to.col);
+    }
+
+    /**
+     * Check if wall placement is valid (no overlap, in bounds, doesn’t block paths).
+     */
     public boolean canPlaceWall(WallPiece wall, QuoridorBoard board) {
         int row = wall.getPosition().row;
         int col = wall.getPosition().col;
 
-        // Check bounds (walls are placed on intersections)
-        if (row < 0 || row >= board.getSize() - 1 || col < 0 || col >= board.getSize() - 1) {
-            return false;
-        }
+        if (row < 0 || row >= board.getSize() - 1 || col < 0 || col >= board.getSize() - 1) return false;
 
-        // Check for overlapping walls
         for (WallPiece existing : board.getWalls()) {
-            if (wall.overlaps(existing)) {
-                return false;
-            }
+            if (wall.overlaps(existing)) return false;
         }
 
-        // Create a temporary board with the new wall to check paths
         QuoridorBoard tempBoard = board.copy();
         tempBoard.placeWall(wall);
 
-        // Check that all players can still reach their goal
-        for (int playerIndex = 0; playerIndex < getNumberOfPlayers(board); playerIndex++) {
-            Position playerPos = board.getPawnPosition(playerIndex);
-            if (playerPos != null) {
-                if (!hasPathToGoal(playerPos, playerIndex, getNumberOfPlayers(board), tempBoard)) {
-                    return false; // Wall would block this player's path
-                }
+        for (int i = 0; i < getNumberOfPlayers(board); i++) {
+            Position pos = board.getPawnPosition(i);
+            if (pos != null && !hasPathToGoal(pos, i, getNumberOfPlayers(board), tempBoard)) {
+                return false;
             }
         }
-
         return true;
     }
 
+    /**
+     * BFS check if a player still has a valid path to goal.
+     */
     private boolean hasPathToGoal(Position start, int playerIndex, int numPlayers, QuoridorBoard board) {
         Queue<Position> queue = new LinkedList<>();
         Set<Position> visited = new HashSet<>();
-
         queue.offer(start);
         visited.add(start);
 
         while (!queue.isEmpty()) {
-            Position current = queue.poll();
+            Position curr = queue.poll();
+            if (hasWon(curr, playerIndex, numPlayers)) return true;
 
-            // Check if we've reached the goal
-            if (hasWon(current, playerIndex, numPlayers)) {
-                return true;
-            }
-
-            // Try all four directions
             Position[] neighbors = {
-                    new Position(current.row - 1, current.col), // North
-                    new Position(current.row + 1, current.col), // South
-                    new Position(current.row, current.col - 1), // West
-                    new Position(current.row, current.col + 1)  // East
+                new Position(curr.row - 1, curr.col),
+                new Position(curr.row + 1, curr.col),
+                new Position(curr.row, curr.col - 1),
+                new Position(curr.row, curr.col + 1)
             };
 
             for (Position next : neighbors) {
-                if (isWithinBounds(next) &&
-                        !visited.contains(next) &&
-                        !board.isWallBlocking(current, next)) {
-
+                if (isWithinBounds(next)
+                        && !visited.contains(next)
+                        && !board.isWallBlocking(curr, next)) {
                     visited.add(next);
                     queue.offer(next);
                 }
             }
         }
-
-        return false; // No path found
+        return false;
     }
 
-    public boolean hasWon(Position position, int playerIndex, int numPlayers) {
+    /**
+     * Check if player has reached the goal.
+     */
+    public boolean hasWon(Position pos, int playerIndex, int numPlayers) {
+        int size = board.getSize() - 1;
         if (numPlayers == 2) {
-            // 2-player: reach opposite side
-            if (playerIndex == 0) {
-                return position.row == board.getSize() - 1; // Player 1 reaches bottom
-            } else {
-                return position.row == 0; // Player 2 reaches top
-            }
+            if (playerIndex == 0) return pos.row == size;
+            else return pos.row == 0;
         } else {
-            // 4-player: each player has their target side
             switch (playerIndex) {
-                case 0: return position.row == board.getSize() - 1; // North player reaches south
-                case 1: return position.row == 0;                    // South player reaches north
-                case 2: return position.col == board.getSize() - 1; // West player reaches east
-                case 3: return position.col == 0;                    // East player reaches west
+                case 0: return pos.row == size;
+                case 1: return pos.row == 0;
+                case 2: return pos.col == size;
+                case 3: return pos.col == 0;
                 default: return false;
             }
         }
     }
 
     private boolean isWithinBounds(Position pos) {
-        return pos.row >= 0 && pos.row < board.getSize() &&
-                pos.col >= 0 && pos.col < board.getSize();
+        return pos.row >= 0 && pos.row < board.getSize() && pos.col >= 0 && pos.col < board.getSize();
     }
 
     private int getNumberOfPlayers(QuoridorBoard board) {
         int count = 0;
         for (int i = 0; i < 4; i++) {
-            if (board.getPawnPosition(i) != null) {
-                count++;
-            }
+            if (board.getPawnPosition(i) != null) count++;
         }
         return count;
     }
 
-    // Add this method that's needed by the refactored board
     public int getSize() {
         return board.getSize();
     }

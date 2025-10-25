@@ -3,7 +3,7 @@
  * This class simply launches the main menu; it does not manage any game logic itself.
  *
  * Authors: Zhuojun Lyu and Priyanshu Singh
- * Date: January 5th, 2025
+ * Date: 2025-10-25
  */
 public class Main {
     public static void main(String[] args) {

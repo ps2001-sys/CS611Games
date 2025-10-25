@@ -7,128 +7,103 @@ import common.Piece;
  * Extends the common Piece class to represent a wall segment.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class WallPiece extends Piece {
-    private Position position;
-    private boolean horizontal;
+    private final Position position;   // The top-left coordinate of the wall
+    private final boolean horizontal;  // Orientation flag (true = horizontal, false = vertical)
+    private final int owner;           // Player number (1–4) who placed the wall
 
-    /**
-     * Create a new wall piece.
-     * @param position The position where the wall is placed
-     * @param horizontal true for horizontal wall, false for vertical
-     */
+    // Create a new wall piece.
     public WallPiece(Position position, boolean horizontal) {
         super(null, 0);  // Walls have no owner in the traditional sense
         this.position = position;
         this.horizontal = horizontal;
+        this.owner = 0;
     }
 
-    /**
-     * Create a new wall piece with character orientation.
-     * @param position The position where the wall is placed
-     * @param orientation 'H' for horizontal, 'V' for vertical
-     */
+    // creat the wall with owner
+    // Main constructor (used in QuoridorGame, supports player ownership)
+    public WallPiece(Position pos, char orientation, int owner) {
+        super("Player" + owner, owner);  
+        this.position = pos;
+        this.horizontal = (orientation == 'H');
+        this.owner = owner;
+    }
+
+
     public WallPiece(Position position, char orientation) {
         this(position, orientation == 'H');
     }
 
-    /**
-     * Get the position of this wall.
-     * @return Wall position
-     */
+    // ---- Getter methods ----
+
+    // Get wall position
     public Position getPosition() {
         return position;
     }
 
-    /**
-     * Check if this wall is horizontal.
-     * @return true if horizontal
-     */
+    // Check if wall is horizontal
     public boolean isHorizontal() {
         return horizontal;
     }
 
-    /**
-     * Check if this wall is vertical.
-     * @return true if vertical
-     */
+    // Check if wall is vertical
     public boolean isVertical() {
         return !horizontal;
     }
 
-    /**
-     * Get the positions blocked by this wall.
-     * A wall blocks two adjacent spaces.
-     * @return Array of blocked positions
-     */
-    public Position[] getBlockedPositions() {
-        if (horizontal) {
-            return new Position[] {
-                    position,
-                    new Position(position.row, position.col + 1)
-            };
-        } else {
-            return new Position[] {
-                    position,
-                    new Position(position.row + 1, position.col)
-            };
-        }
+    // Get the player number who owns this wall
+    public int getOwnerNumber() {
+        return owner;
     }
 
-    /**
-     * Check if this wall overlaps with another wall.
-     * @param other The other wall
-     * @return true if they overlap
-     */
-    public boolean overlaps(WallPiece other) {
-        // Same position and orientation
-        if (position.equals(other.position) && horizontal == other.horizontal) {
-            return true;
-        }
+    // ---- Logic methods ----
 
-        // Crossing at same intersection
-        if (position.equals(other.position) && horizontal != other.horizontal) {
-            return true;
-        }
-
-        // Check adjacent overlap for same orientation
-        if (horizontal == other.horizontal) {
-            if (horizontal) {
-                // Horizontal walls
-                if (position.row == other.position.row) {
-                    return Math.abs(position.col - other.position.col) < 2;
-                }
-            } else {
-                // Vertical walls
-                if (position.col == other.position.col) {
-                    return Math.abs(position.row - other.position.row) < 2;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean isBlank() {
-        return false;  // Walls are never blank
-    }
-
-    @Override
-    public String toString() {
-        return "Wall[" + position + ", " + (horizontal ? "H" : "V") + "]";
-    }
-
+    // Return the wall symbol for rendering
     @Override
     public String getDisplayChar() {
         return horizontal ? "═" : "║";
     }
 
+    // Check if this wall overlaps another wall
+    public boolean overlaps(WallPiece other) {
+        // Same position and same orientation → exact overlap
+        if (position.equals(other.position) && horizontal == other.horizontal)
+            return true;
+
+        // Adjacent overlap in same row/column (prevents touching walls)
+        if (horizontal == other.horizontal) {
+            if (horizontal) {
+                // Horizontal walls in same row
+                if (position.row == other.position.row)
+                    return Math.abs(position.col - other.position.col) < 2;
+            } else {
+                // Vertical walls in same column
+                if (position.col == other.position.col)
+                    return Math.abs(position.row - other.position.row) < 2;
+            }
+        }
+        return false;
+    }
+
+    // Walls are never blank
+    @Override
+    public boolean isBlank() {
+        return false;
+    }
+
+    // ---- Utility methods ----
+
+    @Override
+    public String toString() {
+        return "Wall[" + position + ", " + (horizontal ? "H" : "V") + ", owner=" + owner + "]";
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!(obj instanceof WallPiece)) return false;
         WallPiece wall = (WallPiece) obj;
         return horizontal == wall.horizontal && position.equals(wall.position);
     }

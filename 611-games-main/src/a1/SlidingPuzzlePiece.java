@@ -7,7 +7,7 @@ import common.Piece;
  * Represents a numbered piece that can slide around the board.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class SlidingPuzzlePiece extends Piece {
 

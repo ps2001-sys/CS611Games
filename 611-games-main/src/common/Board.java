@@ -6,7 +6,7 @@ package common;
  *
  * Feel free to extend and tweak to fit your own game style.
  *
- * Created by Zhuojun & Priyanshu, 2025-01-05
+ * Created by Zhuojun & Priyanshu, 2025-10-25
  */
 public abstract class Board {
 
@@ -14,16 +14,23 @@ public abstract class Board {
     protected final int cols;
     protected Tile[][] grid;
 
-    public Board(int rows, int cols) {
-        if(rows < 1 || cols < 1) {
-            // Avoid nonsense - board can't be zero or less
-            throw new IllegalArgumentException("Board must have at least one row AND one column!");
-        }
-        this.rows = rows;
-        this.cols = cols;
-        grid = new Tile[rows][cols];
-        initializeBoard();
+
+    public Board(int rows, int cols, boolean autoInit) {
+    if (rows < 1 || cols < 1) {
+        throw new IllegalArgumentException("Board must have at least one row AND one column!");
     }
+    this.rows = rows;
+    this.cols = cols;
+    grid = new Tile[rows][cols];
+
+    if (autoInit) {
+        initializeBoard(); // if autoInit == true, then initialize board
+    }
+    }
+    public Board(int rows, int cols) {
+        this(rows, cols, true); // 默认行为：自动初始化（不影响A1和A3）
+    }
+
 
     // Each game should fill the board how it wants here
     protected abstract void initializeBoard();

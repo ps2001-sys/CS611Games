@@ -7,7 +7,7 @@ package common;
  * You can extend this class for special tile types in your games,
  * like start, goal, or obstacle tiles.
  *
- * Created by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
+ * Created by Zhuojun Lyu & Priyanshu Singh, 2025-10-25
  */
 public abstract class Tile {
 

@@ -11,7 +11,7 @@ import engine.TextUI;
  * This board manages edges between dots and box ownership.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class DotsAndBoxesBoard extends Board {
     private int[][] horizontalEdges;  // Horizontal edges between dots
@@ -29,10 +29,11 @@ public class DotsAndBoxesBoard extends Board {
      * @param cols Number of box columns
      */
     public DotsAndBoxesBoard(int rows, int cols) {
-        super(rows, cols);
+        super(rows, cols, false);
         this.horizontalEdges = new int[rows + 1][cols];
         this.verticalEdges = new int[rows][cols + 1];
         this.boxOwners = new int[rows][cols];
+        initializeBoard();
     }
 
     @Override

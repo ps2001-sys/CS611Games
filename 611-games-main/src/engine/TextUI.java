@@ -5,12 +5,32 @@ import java.util.Scanner;
 /**
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class TextUI {
     private final Scanner sc = new Scanner(System.in);
     private boolean color = true;
 
+    public String colorize(String text, int playerNumber) {
+        final String RESET = "\u001B[0m";
+        final String RED = "\u001B[31m";
+        final String GREEN = "\u001B[32m";
+        final String BLUE = "\u001B[34m";
+        final String YELLOW = "\u001B[33m";
+
+        switch (playerNumber) {
+            case 1:
+                return RED + text + RESET;      // Player 1 红
+            case 2:
+                return GREEN + text + RESET;    // Player 2 绿
+            case 3:
+                return BLUE + text + RESET;     // Player 3 蓝
+            case 4:
+                return YELLOW + text + RESET;   // Player 4 黄
+            default:
+                return text;                    // 默认无色
+        }
+    }
     public void setColor(boolean on) {
         color = on;
     }

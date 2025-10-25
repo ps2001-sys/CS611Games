@@ -8,7 +8,7 @@ package common;
  * different types of pieces can be placed on different types of tiles.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public abstract class Piece {
     protected String owner;  // The player who owns this piece (can be null for neutral pieces)

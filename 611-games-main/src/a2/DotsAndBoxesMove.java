@@ -5,7 +5,7 @@ package a2;
  * A move is placing an edge between two dots.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class DotsAndBoxesMove {
     private final int row;

@@ -3,6 +3,7 @@ package engine;
 import a1.SlidingPuzzleGame;
 import a2.DotsAndBoxesGame;
 import a3.QuoridorGame;
+import common.Statistics;
 
 /**
  * Main menu for the CS611 Games project.
@@ -13,18 +14,20 @@ import a3.QuoridorGame;
  *
  * Also lets you toggle color display on/off for a nicer look or simpler console.
  *
- * Written by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
- * Updated 2025-01-06 to add Quoridor support
+ * Written by Zhuojun Lyu & Priyanshu Singh, 2025-10-25
+ * Updated 2025-10-26 to add Quoridor support
  */
 public class Menu {
     private final TextUI ui = new TextUI();
+
+    private final Statistics stats = new Statistics();
 
     /**
      * Starts the main menu loop.
      * Keeps asking until the player decides to quit.
      *
      * Demo of how we can easily plug in different games,
-     * all sharing one neat user interface.
+     * all sharing6 one neat user interface.
      */
     public void start() {
         ui.println(ui.bold("╔════════════════════════════════════╗"));
@@ -50,17 +53,17 @@ public class Menu {
             switch (choice) {
                 case "1":
                     ui.println("\nLaunching Sliding Puzzle...\n");
-                    new SlidingPuzzleGame(ui).start();
+                    new SlidingPuzzleGame(ui, stats).start();
                     break;
 
                 case "2":
                     ui.println("\nLaunching Dots & Boxes...\n");
-                    new DotsAndBoxesGame(ui).start();
+                    new DotsAndBoxesGame(ui, stats).start();
                     break;
 
                 case "3":
                     ui.println("\nLaunching Quoridor...\n");
-                    new QuoridorGame(ui).start();
+                    new QuoridorGame(ui, stats).start();
                     break;
 
                 case "4":
@@ -76,8 +79,8 @@ public class Menu {
                     break;
 
                 case "5":
-                    ui.println("\n" + ui.bold("Global Statistics"));
-                    ui.println("This feature is cooking and will show your overall stats soon.");
+                    ui.println("\n" + ui.bold("=== Global Statistics ==="));
+                    ui.println(stats.getAllStats());
                     break;
 
                 case "q":

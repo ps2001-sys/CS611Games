@@ -5,7 +5,7 @@ package a2;
  * Defines board dimensions and game rules.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class Rules {
     private static final int MIN_SIZE = 1;

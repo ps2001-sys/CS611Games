@@ -8,7 +8,7 @@ import common.Piece;
  * Each tile represents a box that can be claimed by a player.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class DotsAndBoxesTile extends Tile {
     private int owner;  // 0 = unclaimed, 1 = player 1, 2 = player 2

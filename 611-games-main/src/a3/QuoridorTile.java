@@ -7,7 +7,7 @@ import common.Tile;
  * Each tile can have walls on its borders and can contain a pawn.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class QuoridorTile extends Tile {
     private boolean wallNorth;

@@ -7,7 +7,7 @@ import common.Piece;
  * Represents a player's ownership marker for a box.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class DotsAndBoxesPiece extends Piece {
 

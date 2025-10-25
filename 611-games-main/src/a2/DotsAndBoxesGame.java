@@ -5,6 +5,7 @@ import engine.TextUI;
 import common.Player;
 import common.InputValidator;
 
+import common.Statistics;
 /**
  * Dots and Boxes game implementation.
  * Extends the Game base class to provide dots and boxes functionality.
@@ -13,7 +14,7 @@ import common.InputValidator;
  * demonstrating correct object-oriented design.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Date: 2025-10-25
  */
 public class DotsAndBoxesGame extends Game {
     // Instance variables for game state
@@ -21,15 +22,23 @@ public class DotsAndBoxesGame extends Game {
     private InputValidator validator;
     private boolean extraTurnOnBox;
     private int lastBoxesCompleted;
+    private final Statistics stats;
 
     /**
      * Create a new Dots and Boxes game.
      * @param ui The text UI for input/output
      */
-    public DotsAndBoxesGame(TextUI ui) {
+    public DotsAndBoxesGame(TextUI ui, Statistics stats) {
         super(ui);
+        
+        this.stats = stats;
         this.validator = new InputValidator(ui);
-        this.extraTurnOnBox = true;  // Standard rule: completing a box grants extra turn
+        this.extraTurnOnBox = true;   // true = completing a box gives an extra turn
+    }
+
+    @Override
+    protected boolean shouldAutoNextPlayer() {
+        return false; // Disable automatic person switching and control manually (determined by processTurn)
     }
 
     @Override
@@ -133,13 +142,14 @@ public class DotsAndBoxesGame extends Game {
 
         // Check for extra turn
         if (lastBoxesCompleted > 0) {
-            ui.println(ui.green("Box completed! " + currentPlayer.getName() + " gets another turn."));
-            if (!extraTurnOnBox) {
-                nextPlayer();  // Move to next player if extra turn rule is disabled
+            if (extraTurnOnBox) {
+                ui.println(ui.green("Box completed! " + currentPlayer.getName() + " gets another turn."));
+                // dont switch
+            } else {
+                nextPlayer(); // switch
             }
-            // If extraTurnOnBox is true, don't change player (they get another turn)
         } else {
-            nextPlayer();  // Normal turn change
+            nextPlayer(); // Switching players without completing the grid.
         }
 
         return true;
@@ -173,6 +183,8 @@ public class DotsAndBoxesGame extends Game {
         Player player2 = players.get(1);
         int score1 = board.getScore(1);
         int score2 = board.getScore(2);
+        boolean player1Win = false;
+        boolean player2Win = false;
 
         ui.println("\n" + ui.bold("=== GAME OVER ==="));
         ui.println("Final scores:");
@@ -180,19 +192,38 @@ public class DotsAndBoxesGame extends Game {
         ui.println("  " + player2.getName() + ": " + score2 + " boxes");
 
         if (score1 > score2) {
-            ui.println(ui.green("\n🎉 " + player1.getName() + " wins!"));
+            ui.println(ui.green("\n " + player1.getName() + " wins!"));
             player1.recordGame(true, duration);
             player2.recordGame(false, duration);
+            player1Win = true;
         } else if (score2 > score1) {
-            ui.println(ui.green("\n🎉 " + player2.getName() + " wins!"));
+            ui.println(ui.green("\n " + player2.getName() + " wins!"));
             player1.recordGame(false, duration);
             player2.recordGame(true, duration);
+            player2Win = true;
         } else {
             ui.println(ui.yellow("\n🤝 It's a tie!"));
             player1.recordGame(false, duration);
             player2.recordGame(false, duration);
+            player1Win = true;
+            player2Win = true;
         }
 
+
+
+
+        //Record the in-game data of each player
+        player1.recordGame(player1Win, duration);
+        player2.recordGame(player2Win, duration);
+
+        //New addition: Sync the results into the global statistics
+        stats.recordGame(player1.getName(), player1Win, score1, duration);
+        stats.recordGame(player2.getName(), player2Win, score2, duration);
+
+        ui.println("\nPlayer Statistics:");
+        for (Player player : players) {
+            ui.println(player.getStatsSummary());
+        }
         // Display statistics
         ui.println("\nPlayer Statistics:");
         for (Player player : players) {
