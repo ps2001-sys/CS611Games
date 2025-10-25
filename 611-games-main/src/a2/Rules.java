@@ -16,8 +16,6 @@ public class Rules {
 
     /**
      * Create rules with specified board dimensions.
-     * @param rows number of box rows (minimum 1)
-     * @param cols number of box columns (minimum 1)
      */
     public Rules(int rows, int cols) {
         if (rows < MIN_SIZE || cols < MIN_SIZE) {

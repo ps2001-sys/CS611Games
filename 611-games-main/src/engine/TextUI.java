@@ -3,8 +3,6 @@ package engine;
 import java.util.Scanner;
 
 /**
- * Utility class for terminal input/output operations.
- * Provides ANSI color support that can be toggled on/off.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
