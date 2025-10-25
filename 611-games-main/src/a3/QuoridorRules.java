@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * Implements the rules and validation logic for Quoridor.
- * Handles move validation, wall placement rules, jump mechanics, and victory conditions.
+ * Updated to work with the new QuoridorBoard that extends Board.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
@@ -16,6 +16,9 @@ public class QuoridorRules {
         this.board = board;
     }
 
+    /**
+     * Validate a move from one position to another.
+     */
     public Position validateMove(Position from, Position to, QuoridorBoard board, int playerIndex) {
         // Check board boundaries
         if (!isWithinBounds(to)) {
@@ -34,10 +37,9 @@ public class QuoridorRules {
             }
 
             // Check if destination is occupied
-            if (board.isOccupied(to)) {
+            if (board.isOccupied(to.row, to.col)) {
                 // Try to jump over the opponent
-                Position jumpPos = calculateJumpPosition(from, to, board);
-                return jumpPos;
+                return calculateJumpPosition(from, to, board);
             }
 
             // Valid normal move
@@ -52,7 +54,7 @@ public class QuoridorRules {
             );
 
             // Middle position must be occupied by opponent
-            if (!board.isOccupied(middle)) {
+            if (!board.isOccupied(middle.row, middle.col)) {
                 return null;
             }
 
@@ -62,7 +64,7 @@ public class QuoridorRules {
             }
 
             // Destination must be free
-            if (board.isOccupied(to)) {
+            if (board.isOccupied(to.row, to.col)) {
                 return null;
             }
 
@@ -72,11 +74,8 @@ public class QuoridorRules {
         // Diagonal jump (when straight jump is blocked)
         if (rowDiff == 1 && colDiff == 1) {
             // Check if this is a valid diagonal jump situation
-            Position straightJump = null;
-
-            // Check horizontal then vertical path
             Position horizontalFirst = new Position(from.row, to.col);
-            if (board.isOccupied(horizontalFirst) &&
+            if (board.isOccupied(horizontalFirst.row, horizontalFirst.col) &&
                     !board.isWallBlocking(from, horizontalFirst) &&
                     !board.isWallBlocking(horizontalFirst, to)) {
 
@@ -84,9 +83,9 @@ public class QuoridorRules {
                 Position beyondHorizontal = new Position(from.row, to.col + (to.col - from.col));
                 if (!isWithinBounds(beyondHorizontal) ||
                         board.isWallBlocking(horizontalFirst, beyondHorizontal) ||
-                        board.isOccupied(beyondHorizontal)) {
+                        board.isOccupied(beyondHorizontal.row, beyondHorizontal.col)) {
 
-                    if (!board.isOccupied(to)) {
+                    if (!board.isOccupied(to.row, to.col)) {
                         return to; // Valid diagonal jump
                     }
                 }
@@ -94,7 +93,7 @@ public class QuoridorRules {
 
             // Check vertical then horizontal path
             Position verticalFirst = new Position(to.row, from.col);
-            if (board.isOccupied(verticalFirst) &&
+            if (board.isOccupied(verticalFirst.row, verticalFirst.col) &&
                     !board.isWallBlocking(from, verticalFirst) &&
                     !board.isWallBlocking(verticalFirst, to)) {
 
@@ -102,9 +101,9 @@ public class QuoridorRules {
                 Position beyondVertical = new Position(to.row + (to.row - from.row), from.col);
                 if (!isWithinBounds(beyondVertical) ||
                         board.isWallBlocking(verticalFirst, beyondVertical) ||
-                        board.isOccupied(beyondVertical)) {
+                        board.isOccupied(beyondVertical.row, beyondVertical.col)) {
 
-                    if (!board.isOccupied(to)) {
+                    if (!board.isOccupied(to.row, to.col)) {
                         return to; // Valid diagonal jump
                     }
                 }
@@ -123,7 +122,7 @@ public class QuoridorRules {
 
         if (isWithinBounds(straightJump) &&
                 !board.isWallBlocking(to, straightJump) &&
-                !board.isOccupied(straightJump)) {
+                !board.isOccupied(straightJump.row, straightJump.col)) {
             return straightJump;
         }
 
@@ -135,10 +134,12 @@ public class QuoridorRules {
             Position leftDiag = new Position(to.row, to.col - 1);
             Position rightDiag = new Position(to.row, to.col + 1);
 
-            if (isWithinBounds(leftDiag) && !board.isWallBlocking(to, leftDiag) && !board.isOccupied(leftDiag)) {
+            if (isWithinBounds(leftDiag) && !board.isWallBlocking(to, leftDiag) &&
+                    !board.isOccupied(leftDiag.row, leftDiag.col)) {
                 diagonalOptions.add(leftDiag);
             }
-            if (isWithinBounds(rightDiag) && !board.isWallBlocking(to, rightDiag) && !board.isOccupied(rightDiag)) {
+            if (isWithinBounds(rightDiag) && !board.isWallBlocking(to, rightDiag) &&
+                    !board.isOccupied(rightDiag.row, rightDiag.col)) {
                 diagonalOptions.add(rightDiag);
             }
         } else {
@@ -146,10 +147,12 @@ public class QuoridorRules {
             Position upDiag = new Position(to.row - 1, to.col);
             Position downDiag = new Position(to.row + 1, to.col);
 
-            if (isWithinBounds(upDiag) && !board.isWallBlocking(to, upDiag) && !board.isOccupied(upDiag)) {
+            if (isWithinBounds(upDiag) && !board.isWallBlocking(to, upDiag) &&
+                    !board.isOccupied(upDiag.row, upDiag.col)) {
                 diagonalOptions.add(upDiag);
             }
-            if (isWithinBounds(downDiag) && !board.isWallBlocking(to, downDiag) && !board.isOccupied(downDiag)) {
+            if (isWithinBounds(downDiag) && !board.isWallBlocking(to, downDiag) &&
+                    !board.isOccupied(downDiag.row, downDiag.col)) {
                 diagonalOptions.add(downDiag);
             }
         }
@@ -162,9 +165,9 @@ public class QuoridorRules {
         return null; // No valid jump available
     }
 
-    public boolean canPlaceWall(Wall wall, QuoridorBoard board) {
-        int row = wall.position.row;
-        int col = wall.position.col;
+    public boolean canPlaceWall(WallPiece wall, QuoridorBoard board) {
+        int row = wall.getPosition().row;
+        int col = wall.getPosition().col;
 
         // Check bounds (walls are placed on intersections)
         if (row < 0 || row >= board.getSize() - 1 || col < 0 || col >= board.getSize() - 1) {
@@ -172,8 +175,8 @@ public class QuoridorRules {
         }
 
         // Check for overlapping walls
-        for (Wall existing : board.getWalls()) {
-            if (wallsOverlap(wall, existing)) {
+        for (WallPiece existing : board.getWalls()) {
+            if (wall.overlaps(existing)) {
                 return false;
             }
         }
@@ -183,49 +186,16 @@ public class QuoridorRules {
         tempBoard.placeWall(wall);
 
         // Check that all players can still reach their goal
-        for (Map.Entry<Integer, Position> entry : getPlayerPositions(board).entrySet()) {
-            int playerIndex = entry.getKey();
-            Position playerPos = entry.getValue();
-
-            if (!hasPathToGoal(playerPos, playerIndex, getNumberOfPlayers(board), tempBoard)) {
-                return false; // Wall would block this player's path
+        for (int playerIndex = 0; playerIndex < getNumberOfPlayers(board); playerIndex++) {
+            Position playerPos = board.getPawnPosition(playerIndex);
+            if (playerPos != null) {
+                if (!hasPathToGoal(playerPos, playerIndex, getNumberOfPlayers(board), tempBoard)) {
+                    return false; // Wall would block this player's path
+                }
             }
         }
 
         return true;
-    }
-
-    private boolean wallsOverlap(Wall w1, Wall w2) {
-        // Same position and orientation
-        if (w1.position.equals(w2.position) && w1.orientation == w2.orientation) {
-            return true;
-        }
-
-        // Check for crossing walls at same intersection
-        if (w1.position.equals(w2.position) && w1.orientation != w2.orientation) {
-            return true;
-        }
-
-        // Check for overlapping segments
-        if (w1.orientation == 'H' && w2.orientation == 'H') {
-            if (w1.position.row == w2.position.row) {
-                // Check horizontal overlap
-                if (Math.abs(w1.position.col - w2.position.col) < 2) {
-                    return true;
-                }
-            }
-        }
-
-        if (w1.orientation == 'V' && w2.orientation == 'V') {
-            if (w1.position.col == w2.position.col) {
-                // Check vertical overlap
-                if (Math.abs(w1.position.row - w2.position.row) < 2) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private boolean hasPathToGoal(Position start, int playerIndex, int numPlayers, QuoridorBoard board) {
@@ -290,24 +260,18 @@ public class QuoridorRules {
                 pos.col >= 0 && pos.col < board.getSize();
     }
 
-    private Map<Integer, Position> getPlayerPositions(QuoridorBoard board) {
-        Map<Integer, Position> positions = new HashMap<>();
-        for (int i = 0; i < 4; i++) {
-            Position pos = board.getPlayerPosition(i);
-            if (pos != null) {
-                positions.put(i, pos);
-            }
-        }
-        return positions;
-    }
-
     private int getNumberOfPlayers(QuoridorBoard board) {
         int count = 0;
         for (int i = 0; i < 4; i++) {
-            if (board.getPlayerPosition(i) != null) {
+            if (board.getPawnPosition(i) != null) {
                 count++;
             }
         }
         return count;
+    }
+
+    // Add this method that's needed by the refactored board
+    public int getSize() {
+        return board.getSize();
     }
 }

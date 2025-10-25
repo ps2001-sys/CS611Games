@@ -1,272 +1,351 @@
 package a3;
 
+import common.Board;
+import common.Tile;
 import engine.TextUI;
 import java.util.*;
 
 /**
- * Represents the Quoridor game board.
- * Manages a 9x9 grid with player positions and wall placements.
+ * Quoridor board implementation that properly extends the common Board class.
+ * This demonstrates proper OOP design and inheritance.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
  */
-public class QuoridorBoard {
-    private final int size;
-    private final Map<Integer, Position> playerPositions;
-    private final List<Wall> walls;
-    private final boolean[][] horizontalWalls;
-    private final boolean[][] verticalWalls;
+public class QuoridorBoard extends Board {
+    private Map<Integer, Pawn> pawns;
+    private List<WallPiece> walls;
+    private Map<Integer, Position> pawnPositions;
 
-    private static final char[] PLAYER_CHARS = {'1', '2', '3', '4'};
+    private static final int BOARD_SIZE = 9;
 
-    public QuoridorBoard(int size) {
-        this.size = size;
-        this.playerPositions = new HashMap<>();
+    /**
+     * Create a new Quoridor board.
+     */
+    public QuoridorBoard() {
+        super(BOARD_SIZE, BOARD_SIZE);
+        this.pawns = new HashMap<>();
         this.walls = new ArrayList<>();
-        this.horizontalWalls = new boolean[size - 1][size - 1];
-        this.verticalWalls = new boolean[size - 1][size - 1];
+        this.pawnPositions = new HashMap<>();
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public void setPlayerPosition(int playerIndex, Position position) {
-        playerPositions.put(playerIndex, position);
-    }
-
-    public Position getPlayerPosition(int playerIndex) {
-        return playerPositions.get(playerIndex);
-    }
-
-    public void movePlayer(int playerIndex, Position newPosition) {
-        playerPositions.put(playerIndex, newPosition);
-    }
-
-    public void placeWall(Wall wall) {
-        walls.add(wall);
-
-        int row = wall.position.row;
-        int col = wall.position.col;
-
-        if (wall.orientation == 'H') {
-            if (isValidWallPosition(row, col)) {
-                horizontalWalls[row][col] = true;
-                if (col + 1 < size - 1) {
-                    horizontalWalls[row][col + 1] = true;
-                }
-            }
-        } else {
-            if (isValidWallPosition(row, col)) {
-                verticalWalls[row][col] = true;
-                if (row + 1 < size - 1) {
-                    verticalWalls[row + 1][col] = true;
-                }
+    @Override
+    protected void initializeBoard() {
+        // Initialize all tiles
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                grid[r][c] = new QuoridorTile(r, c);
             }
         }
     }
 
-    private boolean isValidWallPosition(int row, int col) {
-        return row >= 0 && row < size - 1 && col >= 0 && col < size - 1;
+    /**
+     * Initialize player pawns for the game.
+     * @param numPlayers Number of players (2 or 4)
+     */
+    public void initializePawns(int numPlayers) {
+        if (numPlayers == 2) {
+            // Player 1 starts at top center
+            Pawn p1 = new Pawn("Player 1", 1);
+            placePawn(p1, 0, 4);
+
+            // Player 2 starts at bottom center
+            Pawn p2 = new Pawn("Player 2", 2);
+            placePawn(p2, 8, 4);
+        } else if (numPlayers == 4) {
+            // Player 1 - North
+            Pawn p1 = new Pawn("Player 1", 1);
+            placePawn(p1, 0, 4);
+
+            // Player 2 - South
+            Pawn p2 = new Pawn("Player 2", 2);
+            placePawn(p2, 8, 4);
+
+            // Player 3 - West
+            Pawn p3 = new Pawn("Player 3", 3);
+            placePawn(p3, 4, 0);
+
+            // Player 4 - East
+            Pawn p4 = new Pawn("Player 4", 4);
+            placePawn(p4, 4, 8);
+        }
     }
 
-    public List<Wall> getWalls() {
+    /**
+     * Place a pawn on the board.
+     * @param pawn The pawn to place
+     * @param row Row position
+     * @param col Column position
+     */
+    private void placePawn(Pawn pawn, int row, int col) {
+        QuoridorTile tile = (QuoridorTile) grid[row][col];
+        tile.setPiece(pawn);
+        pawns.put(pawn.getPlayerNumber(), pawn);
+        pawnPositions.put(pawn.getPlayerNumber(), new Position(row, col));
+    }
+
+    /**
+     * Move a pawn to a new position.
+     * @param playerNumber The player number
+     * @param newRow New row position
+     * @param newCol New column position
+     */
+    public void movePawn(int playerNumber, int newRow, int newCol) {
+        if (!isValidPosition(newRow, newCol)) {
+            throw new IllegalArgumentException("Invalid position");
+        }
+
+        Position oldPos = pawnPositions.get(playerNumber);
+        if (oldPos != null) {
+            // Clear old position
+            QuoridorTile oldTile = (QuoridorTile) grid[oldPos.row][oldPos.col];
+            oldTile.setPiece(null);
+        }
+
+        // Set new position
+        Pawn pawn = pawns.get(playerNumber);
+        QuoridorTile newTile = (QuoridorTile) grid[newRow][newCol];
+        newTile.setPiece(pawn);
+        pawnPositions.put(playerNumber, new Position(newRow, newCol));
+    }
+
+    /**
+     * Compatibility method - same as movePawn.
+     * @param playerNumber The player number
+     * @param newPosition New position
+     */
+    public void movePlayer(int playerNumber, Position newPosition) {
+        movePawn(playerNumber, newPosition.row, newPosition.col);
+    }
+
+    /**
+     * Place a wall on the board.
+     * @param wall The wall to place
+     */
+    public void placeWall(WallPiece wall) {
+        walls.add(wall);
+
+        Position pos = wall.getPosition();
+        if (wall.isHorizontal()) {
+            // Set wall on affected tiles
+            if (isValidPosition(pos.row, pos.col)) {
+                ((QuoridorTile) grid[pos.row][pos.col]).setWallSouth(true);
+            }
+            if (isValidPosition(pos.row, pos.col + 1)) {
+                ((QuoridorTile) grid[pos.row][pos.col + 1]).setWallSouth(true);
+            }
+            if (isValidPosition(pos.row + 1, pos.col)) {
+                ((QuoridorTile) grid[pos.row + 1][pos.col]).setWallNorth(true);
+            }
+            if (isValidPosition(pos.row + 1, pos.col + 1)) {
+                ((QuoridorTile) grid[pos.row + 1][pos.col + 1]).setWallNorth(true);
+            }
+        } else {
+            // Vertical wall
+            if (isValidPosition(pos.row, pos.col)) {
+                ((QuoridorTile) grid[pos.row][pos.col]).setWallEast(true);
+            }
+            if (isValidPosition(pos.row + 1, pos.col)) {
+                ((QuoridorTile) grid[pos.row + 1][pos.col]).setWallEast(true);
+            }
+            if (isValidPosition(pos.row, pos.col + 1)) {
+                ((QuoridorTile) grid[pos.row][pos.col + 1]).setWallWest(true);
+            }
+            if (isValidPosition(pos.row + 1, pos.col + 1)) {
+                ((QuoridorTile) grid[pos.row + 1][pos.col + 1]).setWallWest(true);
+            }
+        }
+    }
+
+    /**
+     * Check if there's a wall blocking movement between two positions.
+     * @param from Starting position
+     * @param to Target position
+     * @return true if blocked by wall
+     */
+    public boolean isWallBlocking(Position from, Position to) {
+        QuoridorTile fromTile = (QuoridorTile) grid[from.row][from.col];
+
+        // Check horizontal movement
+        if (from.row == to.row) {
+            if (from.col < to.col) {
+                // Moving right
+                return fromTile.hasWallEast();
+            } else {
+                // Moving left
+                return fromTile.hasWallWest();
+            }
+        }
+
+        // Check vertical movement
+        if (from.col == to.col) {
+            if (from.row < to.row) {
+                // Moving down
+                return fromTile.hasWallSouth();
+            } else {
+                // Moving up
+                return fromTile.hasWallNorth();
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the position of a pawn.
+     * @param playerNumber The player number
+     * @return The pawn's position
+     */
+    public Position getPawnPosition(int playerNumber) {
+        return pawnPositions.get(playerNumber);
+    }
+
+    /**
+     * Compatibility method - same as getPawnPosition.
+     * @param playerNumber The player number
+     * @return The player's position
+     */
+    public Position getPlayerPosition(int playerNumber) {
+        return getPawnPosition(playerNumber);
+    }
+
+    /**
+     * Get the size of the board.
+     * @return Board size (9 for Quoridor)
+     */
+    public int getSize() {
+        return BOARD_SIZE;
+    }
+
+    /**
+     * Check if a position is occupied by a pawn.
+     * @param row Row position
+     * @param col Column position
+     * @return true if occupied
+     */
+    public boolean isOccupied(int row, int col) {
+        if (!isValidPosition(row, col)) return false;
+        QuoridorTile tile = (QuoridorTile) grid[row][col];
+        return !tile.isEmpty();
+    }
+
+    /**
+     * Get all placed walls.
+     * @return List of walls
+     */
+    public List<WallPiece> getWalls() {
         return new ArrayList<>(walls);
     }
 
-    public boolean isWallBlocking(Position from, Position to) {
-        int fromRow = from.row;
-        int fromCol = from.col;
-        int toRow = to.row;
-        int toCol = to.col;
+    @Override
+    public boolean isGameOver() {
+        // Check victory conditions for each player
+        for (Map.Entry<Integer, Position> entry : pawnPositions.entrySet()) {
+            int playerNum = entry.getKey();
+            Position pos = entry.getValue();
 
-        // Vertical movement
-        if (fromCol == toCol) {
-            if (fromRow < toRow) {
-                // Moving down
-                for (int r = fromRow; r < toRow; r++) {
-                    if (r < size - 1 && fromCol > 0 && horizontalWalls[r][fromCol - 1]) return true;
-                    if (r < size - 1 && fromCol < size - 1 && horizontalWalls[r][fromCol]) return true;
-                }
+            if (pawns.size() == 2) {
+                // 2-player victory conditions
+                if (playerNum == 1 && pos.row == 8) return true;  // Player 1 reaches bottom
+                if (playerNum == 2 && pos.row == 0) return true;  // Player 2 reaches top
             } else {
-                // Moving up
-                for (int r = toRow; r < fromRow; r++) {
-                    if (r < size - 1 && fromCol > 0 && horizontalWalls[r][fromCol - 1]) return true;
-                    if (r < size - 1 && fromCol < size - 1 && horizontalWalls[r][fromCol]) return true;
-                }
-            }
-        }
-
-        // Horizontal movement
-        if (fromRow == toRow) {
-            if (fromCol < toCol) {
-                // Moving right
-                for (int c = fromCol; c < toCol; c++) {
-                    if (c < size - 1 && fromRow > 0 && verticalWalls[fromRow - 1][c]) return true;
-                    if (c < size - 1 && fromRow < size - 1 && verticalWalls[fromRow][c]) return true;
-                }
-            } else {
-                // Moving left
-                for (int c = toCol; c < fromCol; c++) {
-                    if (c < size - 1 && fromRow > 0 && verticalWalls[fromRow - 1][c]) return true;
-                    if (c < size - 1 && fromRow < size - 1 && verticalWalls[fromRow][c]) return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public boolean isOccupied(Position position) {
-        for (Position pos : playerPositions.values()) {
-            if (pos.equals(position)) {
-                return true;
+                // 4-player victory conditions
+                if (playerNum == 1 && pos.row == 8) return true;  // North player reaches south
+                if (playerNum == 2 && pos.row == 0) return true;  // South player reaches north
+                if (playerNum == 3 && pos.col == 8) return true;  // West player reaches east
+                if (playerNum == 4 && pos.col == 0) return true;  // East player reaches west
             }
         }
         return false;
     }
 
-    public int getPlayerAt(Position position) {
-        for (Map.Entry<Integer, Position> entry : playerPositions.entrySet()) {
-            if (entry.getValue().equals(position)) {
-                return entry.getKey();
-            }
-        }
-        return -1;
-    }
-
+    @Override
     public String render() {
         StringBuilder sb = new StringBuilder();
 
         // Column numbers
         sb.append("    ");
-        for (int c = 0; c < size; c++) {
+        for (int c = 0; c < cols; c++) {
             sb.append(c).append("   ");
         }
         sb.append("\n");
 
-        for (int r = 0; r < size; r++) {
-            // Horizontal wall row
+        for (int r = 0; r < rows; r++) {
+            // Horizontal walls and borders
             sb.append("  ");
-            for (int c = 0; c < size; c++) {
+            for (int c = 0; c < cols; c++) {
                 sb.append("+");
-                if (c < size - 1 && r > 0 && horizontalWalls[r - 1][c]) {
-                    sb.append("===");
+                QuoridorTile tile = (QuoridorTile) grid[r][c];
+                if (r > 0 && tile.hasWallNorth()) {
+                    sb.append("═══");
                 } else {
                     sb.append("---");
                 }
             }
             sb.append("+\n");
 
-            // Cell row
+            // Vertical walls and pawns
             sb.append(r).append(" ");
-            for (int c = 0; c < size; c++) {
-                // Check for vertical wall
-                if (c > 0 && r < size - 1 && verticalWalls[r][c - 1]) {
+            for (int c = 0; c < cols; c++) {
+                QuoridorTile tile = (QuoridorTile) grid[r][c];
+
+                if (c > 0 && tile.hasWallWest()) {
                     sb.append("║");
                 } else {
                     sb.append("|");
                 }
 
-                // Check for player
-                Position pos = new Position(r, c);
-                int playerIndex = getPlayerAt(pos);
-                if (playerIndex >= 0) {
-                    sb.append(" ").append(PLAYER_CHARS[playerIndex]).append(" ");
+                if (!tile.isEmpty()) {
+                    sb.append(" ").append(tile.getPiece().getDisplayChar()).append(" ");
                 } else {
                     sb.append("   ");
                 }
             }
-            sb.append("|\n");
+
+            // Right border
+            QuoridorTile lastTile = (QuoridorTile) grid[r][cols - 1];
+            if (lastTile.hasWallEast()) {
+                sb.append("║");
+            } else {
+                sb.append("|");
+            }
+            sb.append("\n");
         }
 
         // Bottom border
         sb.append("  ");
-        for (int c = 0; c < size; c++) {
-            sb.append("+---");
+        for (int c = 0; c < cols; c++) {
+            sb.append("+");
+            QuoridorTile tile = (QuoridorTile) grid[rows - 1][c];
+            if (tile.hasWallSouth()) {
+                sb.append("═══");
+            } else {
+                sb.append("---");
+            }
         }
         sb.append("+\n");
 
         return sb.toString();
     }
 
-    public String render(TextUI ui) {
-        if (!ui.isColor()) {
-            return render();
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        // Column numbers
-        sb.append("    ");
-        for (int c = 0; c < size; c++) {
-            sb.append(c).append("   ");
-        }
-        sb.append("\n");
-
-        for (int r = 0; r < size; r++) {
-            // Horizontal wall row
-            sb.append("  ");
-            for (int c = 0; c < size; c++) {
-                sb.append("+");
-                if (c < size - 1 && r > 0 && horizontalWalls[r - 1][c]) {
-                    sb.append(ui.magenta("═══"));
-                } else {
-                    sb.append("---");
-                }
-            }
-            sb.append("+\n");
-
-            // Cell row
-            sb.append(r).append(" ");
-            for (int c = 0; c < size; c++) {
-                // Check for vertical wall
-                if (c > 0 && r < size - 1 && verticalWalls[r][c - 1]) {
-                    sb.append(ui.magenta("║"));
-                } else {
-                    sb.append("|");
-                }
-
-                // Check for player
-                Position pos = new Position(r, c);
-                int playerIndex = getPlayerAt(pos);
-                if (playerIndex >= 0) {
-                    String playerStr = " " + PLAYER_CHARS[playerIndex] + " ";
-                    // Apply color based on player
-                    switch (playerIndex) {
-                        case 0: sb.append(ui.red(playerStr)); break;
-                        case 1: sb.append(ui.blue(playerStr)); break;
-                        case 2: sb.append(ui.green(playerStr)); break;
-                        case 3: sb.append(ui.yellow(playerStr)); break;
-                        default: sb.append(playerStr);
-                    }
-                } else {
-                    sb.append("   ");
-                }
-            }
-            sb.append("|\n");
-        }
-
-        // Bottom border
-        sb.append("  ");
-        for (int c = 0; c < size; c++) {
-            sb.append("+---");
-        }
-        sb.append("+\n");
-
-        return sb.toString();
-    }
-
+    /**
+     * Create a copy of the board for AI or validation.
+     * @return A copy of the board
+     */
     public QuoridorBoard copy() {
-        QuoridorBoard copy = new QuoridorBoard(this.size);
-        copy.playerPositions.putAll(this.playerPositions);
-        copy.walls.addAll(this.walls);
+        QuoridorBoard copy = new QuoridorBoard();
 
-        for (int r = 0; r < size - 1; r++) {
-            for (int c = 0; c < size - 1; c++) {
-                copy.horizontalWalls[r][c] = this.horizontalWalls[r][c];
-                copy.verticalWalls[r][c] = this.verticalWalls[r][c];
-            }
+        // Copy pawns
+        for (Map.Entry<Integer, Position> entry : pawnPositions.entrySet()) {
+            Position pos = entry.getValue();
+            Pawn original = pawns.get(entry.getKey());
+            Pawn pawnCopy = new Pawn(original.getOwner(), original.getPlayerNumber());
+            copy.placePawn(pawnCopy, pos.row, pos.col);
+        }
+
+        // Copy walls
+        for (WallPiece wall : walls) {
+            copy.placeWall(new WallPiece(wall.getPosition(), wall.isHorizontal()));
         }
 
         return copy;

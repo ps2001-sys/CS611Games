@@ -3,25 +3,33 @@ package a2;
 import engine.Game;
 import engine.TextUI;
 import common.Player;
-import common.Statistics;
 import common.InputValidator;
 
 /**
- * Terminal-based two-player Dots and Boxes game.
- * Features colored rendering (Player 1 = red, Player 2 = blue).
- * Tracks statistics across multiple games.
+ * Dots and Boxes game implementation.
+ * Extends the Game base class to provide dots and boxes functionality.
+ *
+ * This class properly uses instance variables for board and players,
+ * demonstrating correct object-oriented design.
  *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
  */
-public class DotsAndBoxesGame implements Game {
-    private final TextUI ui;
-    private final Statistics stats = new Statistics();
-    private final InputValidator validator;
+public class DotsAndBoxesGame extends Game {
+    // Instance variables for game state
+    private DotsAndBoxesBoard board;
+    private InputValidator validator;
+    private boolean extraTurnOnBox;
+    private int lastBoxesCompleted;
 
+    /**
+     * Create a new Dots and Boxes game.
+     * @param ui The text UI for input/output
+     */
     public DotsAndBoxesGame(TextUI ui) {
-        this.ui = ui;
+        super(ui);
         this.validator = new InputValidator(ui);
+        this.extraTurnOnBox = true;  // Standard rule: completing a box grants extra turn
     }
 
     @Override
@@ -30,163 +38,191 @@ public class DotsAndBoxesGame implements Game {
     }
 
     @Override
-    public void start() {
-        ui.println(ui.bold("-- A2: Dots & Boxes --"));
+    protected int getNumberOfPlayers() {
+        return 2;  // Always 2 players
+    }
+
+    @Override
+    protected void setupPlayers() {
+        ui.println("Setting up players for Dots & Boxes...\n");
 
         while (true) {
-            Rules rules = readRules();
+            String name1 = validator.readValidName("Player 1 name (default P1): ", "P1");
+            String name2 = validator.readValidName("Player 2 name (default P2): ", "P2");
 
-            // Get player names with validation
-            Player p1, p2;
-            while (true) {
-                String name1 = validator.readValidName("Player 1 name (default P1): ", "P1");
-                String name2 = validator.readValidName("Player 2 name (default P2): ", "P2");
-
-                // Disallow duplicate names
-                if (name1.equalsIgnoreCase(name2)) {
-                    ui.println(ui.red("Player names cannot be the same. Please enter again.\n"));
-                    continue;
-                }
-
-                p1 = new Player(name1);
-                p2 = new Player(name2);
-                break;
+            if (name1.equalsIgnoreCase(name2)) {
+                ui.println(ui.red("Player names must be different. Please try again.\n"));
+                continue;
             }
 
-            // Play the match
-            boolean again = playMatch(rules, p1, p2);
-
-            if (!again) {
-                String choice = validator.readChoice(
-                        "\n[1] Change settings  [2] Back to main menu",
-                        "1|2"
-                );
-                if (choice.equals("2")) {
-                    ui.println("\n" + stats.getAllStats());
-                    return;
-                }
-            }
+            players.add(new Player(name1, 1));
+            players.add(new Player(name2, 2));
+            break;
         }
     }
 
-    /**
-     * Play a single match of Dots and Boxes.
-     * @return true if players want to play again with same settings
-     */
-    private boolean playMatch(Rules rules, Player p1, Player p2) {
-        DBGrid grid = new DBGrid(rules.rows, rules.cols);
-        int currentPlayer = 1;
-        long startNs = System.nanoTime();
-        int totalMoves = 0;  // ← FIXED: Added move counter
-
-        while (true) {
-            // Render board
-            ui.println(ui.isColor() ? grid.renderColored(ui) : grid.render());
-            ui.println("Scores: " + p1.getName() + "=" + grid.score(1) +
-                    "  " + p2.getName() + "=" + grid.score(2));
-
-            // Check for game end
-            if (grid.isFull()) {
-                long durMs = (System.nanoTime() - startNs) / 1_000_000;
-                int s1 = grid.score(1);
-                int s2 = grid.score(2);
-
-                if (s1 == s2) {
-                    ui.println(ui.bold("Tie! Final: " + s1 + "-" + s2));
-                    // ← FIXED: Record moves and time for both players in a tie
-                    stats.recordGame(p1.getName(), false, totalMoves / 2, durMs / 2);
-                    stats.recordGame(p2.getName(), false, totalMoves / 2, durMs / 2);
-                } else {
-                    String winner = (s1 > s2) ? p1.getName() : p2.getName();
-                    String loser = (s1 > s2) ? p2.getName() : p1.getName();
-                    ui.println(ui.bold("Winner: " + winner + "  Final: " + s1 + "-" + s2));
-
-                    // ← FIXED: Record actual move count and time for both players
-                    stats.recordGame(winner, true, totalMoves, durMs);
-                    stats.recordGame(loser, false, totalMoves, durMs);
-                }
-
-                // Display current statistics
-                ui.println("\n" + stats.getStats(p1.getName()));
-                ui.println(stats.getStats(p2.getName()));
-
-                String choice = validator.readChoice(
-                        "[1] Play again (same settings)  [2] Change settings  [3] Back to main",
-                        "1|2|3"
-                );
-
-                if ("1".equals(choice)) return true;
-                if ("2".equals(choice)) return false;
-                if ("3".equals(choice)) {
-                    ui.println("\n" + stats.getAllStats());
-                    return false;
-                }
-            }
-
-            // Get current player's move
-            String currentName = (currentPlayer == 1) ? p1.getName() : p2.getName();
-            ui.println(currentName + " turn. Enter: H r c  or  V r c   (s=stats, q=quit)");
-            ui.print("> ");
-            String line = ui.nextLine().trim();
-
-            // Handle quit command
-            if (line.equalsIgnoreCase("q")) {
-                ui.println(ui.bold("Quit. Summary: " +
-                        p1.getName() + "=" + grid.score(1) + ", " +
-                        p2.getName() + "=" + grid.score(2)));
-                ui.println("\n" + stats.getAllStats());
-                return false;
-            }
-
-            // Handle stats command
-            if (line.equalsIgnoreCase("s")) {
-                ui.println(stats.getAllStats());
-                continue;
-            }
-
-            // Parse move input
-            String[] tokens = line.split("\\s+");
-            if (tokens.length != 3) {
-                ui.println(ui.red("Format: H r c  or  V r c"));
-                continue;
-            }
-
-            char dir = Character.toUpperCase(tokens[0].charAt(0));
-            Integer r = ui.tryParseInt(tokens[1]);
-            Integer c = ui.tryParseInt(tokens[2]);
-
-            if (r == null || c == null || (dir != 'H' && dir != 'V')) {
-                ui.println(ui.red("Invalid input."));
-                continue;
-            }
-
-            // Apply the move
-            DBMove move = new DBMove(r, c, dir);
-            if (!grid.isEdgeFree(move)) {
-                ui.println(ui.red("Edge occupied or out of range."));
-                continue;
-            }
-
-            boolean completedBox = grid.applyEdge(move, currentPlayer);
-            totalMoves++;  // ← FIXED: Increment move counter
-
-            // Switch players (unless they completed a box and get another turn)
-            if (!(completedBox && rules.extraTurnOnBox)) {
-                currentPlayer = 3 - currentPlayer; // Toggle between 1 and 2
-            }
-        }
-    }
-
-    /**
-     * Read board dimensions from user.
-     */
-    private Rules readRules() {
+    @Override
+    protected void initializeGame() {
+        // Get board dimensions
         int rows = validator.readBoundedInt(
-                "Rows (>=1, default 2): ", 2, 1, InputValidator.MAX_BOARD_SIZE
+                "Number of box rows (1-10, default 2): ", 2, 1, 10
         );
         int cols = validator.readBoundedInt(
-                "Cols (>=1, default 2): ", 2, 1, InputValidator.MAX_BOARD_SIZE
+                "Number of box columns (1-10, default 2): ", 2, 1, 10
         );
-        return Rules.standard(rows, cols);
+
+        // Create the board
+        board = new DotsAndBoxesBoard(rows, cols);
+
+        ui.println("\nGame started! Players take turns drawing edges between dots.");
+        ui.println("Complete a box to claim it and get an extra turn.\n");
+    }
+
+    @Override
+    protected boolean processTurn() {
+        Player currentPlayer = getCurrentPlayer();
+        int playerNumber = currentPlayer.getPlayerNumber();
+
+        ui.println("\n" + currentPlayer.getName() + "'s turn (Player " + playerNumber + ")");
+        ui.println("Enter: [H/V] <row> <col>  (h=help, s=stats, q=quit)");
+        ui.print("> ");
+
+        String input = ui.nextLine().trim();
+
+        if (input.equalsIgnoreCase("q")) {
+            return false;  // End game
+        }
+
+        if (input.equalsIgnoreCase("h")) {
+            displayHelp();
+            return true;
+        }
+
+        if (input.equalsIgnoreCase("s")) {
+            displayStats();
+            return true;
+        }
+
+        // Parse move
+        String[] tokens = input.split("\\s+");
+        if (tokens.length != 3) {
+            ui.println(ui.red("Invalid format. Use: H <row> <col> or V <row> <col>"));
+            return true;
+        }
+
+        char direction = Character.toUpperCase(tokens[0].charAt(0));
+        Integer row = ui.tryParseInt(tokens[1]);
+        Integer col = ui.tryParseInt(tokens[2]);
+
+        if (row == null || col == null || (direction != 'H' && direction != 'V')) {
+            ui.println(ui.red("Invalid input. Direction must be H or V, followed by numbers."));
+            return true;
+        }
+
+        // Create and validate move
+        DotsAndBoxesMove move = new DotsAndBoxesMove(row, col, direction);
+
+        if (!board.isEdgeFree(move)) {
+            ui.println(ui.red("That edge is already taken or out of bounds."));
+            return true;
+        }
+
+        // Apply the move
+        lastBoxesCompleted = board.applyEdge(move, playerNumber);
+        currentPlayer.addScore(lastBoxesCompleted);
+
+        // Check for extra turn
+        if (lastBoxesCompleted > 0) {
+            ui.println(ui.green("Box completed! " + currentPlayer.getName() + " gets another turn."));
+            if (!extraTurnOnBox) {
+                nextPlayer();  // Move to next player if extra turn rule is disabled
+            }
+            // If extraTurnOnBox is true, don't change player (they get another turn)
+        } else {
+            nextPlayer();  // Normal turn change
+        }
+
+        return true;
+    }
+
+    @Override
+    protected boolean isGameOver() {
+        return board.isGameOver();
+    }
+
+    @Override
+    protected void displayGameState() {
+        ui.println("\n" + board.render(ui));
+
+        // Display scores
+        ui.println("Scores: ");
+        for (Player player : players) {
+            int score = board.getScore(player.getPlayerNumber());
+            player.resetScore();  // Reset to ensure accurate count
+            player.addScore(score);
+            ui.println("  " + player.getName() + ": " + score + " boxes");
+        }
+    }
+
+    @Override
+    protected void handleGameEnd() {
+        long duration = getGameDuration();
+
+        // Determine winner
+        Player player1 = players.get(0);
+        Player player2 = players.get(1);
+        int score1 = board.getScore(1);
+        int score2 = board.getScore(2);
+
+        ui.println("\n" + ui.bold("=== GAME OVER ==="));
+        ui.println("Final scores:");
+        ui.println("  " + player1.getName() + ": " + score1 + " boxes");
+        ui.println("  " + player2.getName() + ": " + score2 + " boxes");
+
+        if (score1 > score2) {
+            ui.println(ui.green("\n🎉 " + player1.getName() + " wins!"));
+            player1.recordGame(true, duration);
+            player2.recordGame(false, duration);
+        } else if (score2 > score1) {
+            ui.println(ui.green("\n🎉 " + player2.getName() + " wins!"));
+            player1.recordGame(false, duration);
+            player2.recordGame(true, duration);
+        } else {
+            ui.println(ui.yellow("\n🤝 It's a tie!"));
+            player1.recordGame(false, duration);
+            player2.recordGame(false, duration);
+        }
+
+        // Display statistics
+        ui.println("\nPlayer Statistics:");
+        for (Player player : players) {
+            ui.println(player.getStatsSummary());
+        }
+    }
+
+    @Override
+    protected void displayHelp() {
+        ui.println("\n=== Dots & Boxes Help ===");
+        ui.println("Goal: Claim more boxes than your opponent");
+        ui.println("Rules:");
+        ui.println("  - Draw edges between dots to form boxes");
+        ui.println("  - Complete a box to claim it and get another turn");
+        ui.println("  - The player with the most boxes wins");
+        ui.println("Commands:");
+        ui.println("  H <row> <col> - Draw horizontal edge");
+        ui.println("  V <row> <col> - Draw vertical edge");
+        ui.println("  h             - Show this help");
+        ui.println("  s             - Show statistics");
+        ui.println("  q             - Quit the game");
+    }
+
+    /**
+     * Display player statistics.
+     */
+    private void displayStats() {
+        ui.println("\nPlayer Statistics:");
+        for (Player player : players) {
+            ui.println(player.getStatsSummary());
+        }
     }
 }

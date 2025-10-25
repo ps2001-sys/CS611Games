@@ -7,6 +7,8 @@ import java.util.Random;
  * Uses a "blank walk" method: randomly moves the blank tile many times
  * to ensure the generated puzzle is always solvable.
  *
+ * Updated to work with SlidingPuzzleBoard instead of Board.
+ *
  * Author: Zhuojun Lyu and Priyanshu Singh
  * Date: 2025-01-05
  */
@@ -24,7 +26,7 @@ public class Randomizer {
      * @param board the board to shuffle
      * @param steps number of random moves to perform
      */
-    public void shuffle(Board board, int steps) {
+    public void shuffle(SlidingPuzzleBoard board, int steps) {
         int lastDr = 0, lastDc = 0;
 
         for (int i = 0; i < steps; i++) {
