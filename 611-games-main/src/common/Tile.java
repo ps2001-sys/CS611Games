@@ -1,89 +1,89 @@
 package common;
 
 /**
- * Abstract base class representing a tile/space on a game board.
- * This class can be extended for different types of tiles in various games.
- * Tiles are containers that can hold pieces.
+ * Tile class — represents a single square or space on the game board.
+ * Think of it as a little container that might hold a game piece.
  *
- * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * You can extend this class for special tile types in your games,
+ * like start, goal, or obstacle tiles.
+ *
+ * Created by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
  */
 public abstract class Tile {
-    protected int row;
-    protected int col;
-    protected Piece piece;  // The piece currently on this tile (can be null)
+
+    protected int row;       // row position on the board
+    protected int col;       // column position on the board
+    protected Piece piece;   // the piece sitting on this tile, null if empty
 
     /**
-     * Constructor for creating a tile at a specific position.
-     * @param row Row position of the tile
-     * @param col Column position of the tile
+     * Create a tile at the given spot.
+     * Starts off empty (no piece).
+     *
+     * @param row Row index on the board
+     * @param col Column index on the board
      */
     public Tile(int row, int col) {
         this.row = row;
         this.col = col;
-        this.piece = null;
+        this.piece = null; // nothing here yet
     }
 
     /**
-     * Place a piece on this tile.
-     * @param piece The piece to place (can be null to clear)
+     * Put a piece on this tile.
+     * Pass null if you want to clear it.
      */
     public void setPiece(Piece piece) {
         this.piece = piece;
     }
 
     /**
-     * Get the piece on this tile.
-     * @return The piece on this tile (null if empty)
+     * Grab the piece currently here.
+     * Might be null if the tile is empty.
      */
     public Piece getPiece() {
         return piece;
     }
 
     /**
-     * Check if this tile is empty (no piece on it).
-     * @return true if empty, false otherwise
+     * Is this tile empty, with no piece at all?
      */
     public boolean isEmpty() {
         return piece == null;
     }
 
     /**
-     * Get the row position of this tile.
-     * @return Row position
+     * Which row is this tile in?
      */
     public int getRow() {
         return row;
     }
 
     /**
-     * Get the column position of this tile.
-     * @return Column position
+     * … and which column?
      */
     public int getCol() {
         return col;
     }
 
     /**
-     * Check if this tile can accept a piece. Can be overridden by subclasses
-     * for special tile types that might not accept pieces.
-     * @param piece The piece to check
-     * @return true if the piece can be placed here, false otherwise
+     * Can we put this piece here?
+     * By default, yes, but subclasses can say “no way” if needed.
      */
     public boolean canAcceptPiece(Piece piece) {
-        return true;  // Default: all tiles can accept pieces
+        return true;  // default says yes, game rules might override
     }
 
     /**
-     * Get a string representation of this tile.
-     * @return String representation
+     * Return a string version of this tile.
+     * Subclasses *must* implement this (abstract method).
      */
+    @Override
     public abstract String toString();
 
     /**
-     * Check if this tile is a special tile (e.g., goal, start, etc.).
-     * Default is false, can be overridden by subclasses.
-     * @return true if special, false otherwise
+     * Is this a “special” tile? Start, goal, trap, whatever.
+     * Most tiles are not special by default.
+     * Override in your special tiles if you want.
      */
     public boolean isSpecial() {
         return false;

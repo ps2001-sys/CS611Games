@@ -4,46 +4,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Enhanced Player class that represents a player in any game.
- * Stores player information, game state, and statistics.
+ * Player class — captures info about someone playing the game.
+ * Keeps track of scores, wins/losses, pieces they own, and all that jazz.
  *
- * This class provides comprehensive player management functionality
- * that can be used across all games in the suite.
+ * Feel free to add more stats if you want,
+ * or make it fancier for your own game use cases!
  *
- * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Created by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
  */
 public class Player {
+
     private final String name;
     private int score;
     private int wins;
     private int losses;
     private int gamesPlayed;
-    private long totalPlayTime;
-    private List<Piece> pieces;  // Pieces owned by this player
-    private boolean isActive;    // Whether it's currently this player's turn
-    private int playerNumber;    // Player number (1, 2, 3, 4, etc.)
+    private long totalPlayTime;    // in milliseconds
+
+    private List<Piece> pieces;    // Pieces owned by this player
+    private boolean isActive;      // True if player’s turn right now
+    private int playerNumber;      // e.g. Player 1, Player 2...
 
     /**
-     * Constructor for creating a new player.
-     * @param name The player's name
+     * Create a player with just a name.
+     * If name is empty or too long, it gets cleaned up.
+     *
+     * @param name the player's chosen name
      */
     public Player(String name) {
-        this.name = validateName(name);
-        this.score = 0;
-        this.wins = 0;
-        this.losses = 0;
-        this.gamesPlayed = 0;
-        this.totalPlayTime = 0;
-        this.pieces = new ArrayList<>();
-        this.isActive = false;
-        this.playerNumber = 0;
+        this.name = cleanName(name);
+        score = 0;
+        wins = 0;
+        losses = 0;
+        gamesPlayed = 0;
+        totalPlayTime = 0;
+        pieces = new ArrayList<>();
+        isActive = false;
+        playerNumber = 0;  // default, can be set later
     }
 
     /**
-     * Constructor with player number.
-     * @param name The player's name
-     * @param playerNumber The player's number
+     * Same as above but also assign a player number
      */
     public Player(String name, int playerNumber) {
         this(name);
@@ -51,79 +52,68 @@ public class Player {
     }
 
     /**
-     * Validate and clean the player name.
-     * @param name Raw name input
-     * @return Cleaned name
+     * Make sure the name is reasonable:
+     * no empty strings, no long nonsense
      */
-    private String validateName(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return "Player";
+    private String cleanName(String rawName) {
+        if (rawName == null || rawName.trim().isEmpty()) {
+            return "Player";  // fallback name
         }
-        String cleaned = name.trim();
-        if (cleaned.length() > 15) {
-            cleaned = cleaned.substring(0, 15);
+        String trimmed = rawName.trim();
+        if (trimmed.length() > 15) {
+            trimmed = trimmed.substring(0, 15);
         }
-        return cleaned;
+        return trimmed;
     }
 
-    /**
-     * Get the player's name.
-     * @return Player name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Get the player's current score.
-     * @return Current score
-     */
     public int getScore() {
         return score;
     }
 
     /**
-     * Add to the player's score.
-     * @param points Points to add
+     * Bumps the player's score by the given points.
+     * Negative is allowed if you want to deduct.
      */
     public void addScore(int points) {
-        this.score += points;
+        score += points;
     }
 
     /**
-     * Reset the player's score to zero.
+     * Resets score back to zero,
+     * usually at start of a new game or round.
      */
     public void resetScore() {
-        this.score = 0;
+        score = 0;
     }
 
     /**
-     * Record a game result for this player.
-     * @param won Whether the player won
-     * @param timeMs Time taken in milliseconds
+     * Call this after a game finishes to update stats.
+     * @param won Did the player win or lose?
+     * @param timeMs How long they spent playing (in ms)
      */
     public void recordGame(boolean won, long timeMs) {
         gamesPlayed++;
         totalPlayTime += timeMs;
-        if (won) {
-            wins++;
-        } else {
-            losses++;
-        }
+        if (won) wins++;
+        else losses++;
     }
 
     /**
-     * Get the player's win rate.
-     * @return Win rate as a percentage (0-100)
+     * Returns win rate between 0 and 100%.
+     * If no games played yet, returns 0.
      */
     public double getWinRate() {
         if (gamesPlayed == 0) return 0.0;
-        return (double) wins / gamesPlayed * 100.0;
+        return (wins * 100.0) / gamesPlayed;
     }
 
     /**
-     * Get average play time per game.
-     * @return Average time in milliseconds
+     * Average playtime per game in milliseconds.
+     * Returns 0 if no games played.
      */
     public long getAveragePlayTime() {
         if (gamesPlayed == 0) return 0;
@@ -131,74 +121,63 @@ public class Player {
     }
 
     /**
-     * Add a piece to this player's collection.
-     * @param piece The piece to add
+     * Adds a piece to the player’s stash.
+     * Also sets the piece’s owner field.
      */
     public void addPiece(Piece piece) {
-        if (piece != null) {
-            piece.setOwner(this.name);
-            pieces.add(piece);
-        }
+        if (piece == null) return;
+        piece.setOwner(this.name);
+        pieces.add(piece);
     }
 
     /**
-     * Remove a piece from this player's collection.
-     * @param piece The piece to remove
+     * Removes a piece from the player.
+     * If piece isn’t owned, nothing happens.
      */
     public void removePiece(Piece piece) {
         pieces.remove(piece);
     }
 
     /**
-     * Get all pieces owned by this player.
-     * @return List of pieces
+     * Returns a copy of the player's pieces list.
+     * So external callers can’t modify internal list directly.
      */
     public List<Piece> getPieces() {
         return new ArrayList<>(pieces);
     }
 
     /**
-     * Clear all pieces from this player.
+     * Clears all pieces from the player.
      */
     public void clearPieces() {
         pieces.clear();
     }
 
     /**
-     * Check if it's this player's turn.
-     * @return true if active, false otherwise
+     * Are we up? Checks if it’s this player's turn.
      */
     public boolean isActive() {
         return isActive;
     }
 
     /**
-     * Set whether it's this player's turn.
-     * @param active true if it's this player's turn
+     * Set whether this player is active (their turn).
      */
     public void setActive(boolean active) {
         this.isActive = active;
     }
 
-    /**
-     * Get the player number.
-     * @return Player number
-     */
     public int getPlayerNumber() {
         return playerNumber;
     }
 
-    /**
-     * Set the player number.
-     * @param number New player number
-     */
-    public void setPlayerNumber(int number) {
-        this.playerNumber = number;
+    public void setPlayerNumber(int num) {
+        playerNumber = num;
     }
 
     /**
-     * Get a statistics summary for this player.
-     * @return Statistics string
+     * Shows a quick summary of this player's stats.
+     * Example: "Alice - Games: 10, Wins: 7, Win Rate: 70.0%, Avg Time: 55.23s"
      */
     public String getStatsSummary() {
         return String.format("%s - Games: %d, Wins: %d, Win Rate: %.1f%%, Avg Time: %.2fs",
@@ -206,7 +185,7 @@ public class Player {
     }
 
     /**
-     * Reset all statistics for this player.
+     * Wipes all statistics clean, score & gameplay history reset.
      */
     public void resetStats() {
         score = 0;
@@ -224,9 +203,9 @@ public class Player {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Player player = (Player) obj;
-        return name.equals(player.name);
+        if (!(obj instanceof Player)) return false;
+        Player other = (Player) obj;
+        return name.equals(other.name);
     }
 
     @Override

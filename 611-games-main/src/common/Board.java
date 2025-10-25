@@ -1,108 +1,74 @@
 package common;
 
 /**
- * Abstract base class for all game boards in the CS611 Game Suite.
- * Provides common functionality for board-based games.
+ * Board class holds the tiles for various games.
+ * It's kinda like the playground where your game happens.
  *
- * This class demonstrates proper inheritance and code reuse across different games.
- * Each game can extend this class to create their specific board implementation.
+ * Feel free to extend and tweak to fit your own game style.
  *
- * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
+ * Created by Zhuojun & Priyanshu, 2025-01-05
  */
 public abstract class Board {
+
     protected final int rows;
     protected final int cols;
-    protected Tile[][] grid;  // Grid of tiles that make up the board
+    protected Tile[][] grid;
 
-    /**
-     * Constructor for creating a board with specified dimensions.
-     * @param rows Number of rows in the board
-     * @param cols Number of columns in the board
-     */
     public Board(int rows, int cols) {
-        if (rows < 1 || cols < 1) {
-            throw new IllegalArgumentException("Board must have at least 1 row and 1 column");
+        if(rows < 1 || cols < 1) {
+            // Avoid nonsense - board can't be zero or less
+            throw new IllegalArgumentException("Board must have at least one row AND one column!");
         }
         this.rows = rows;
         this.cols = cols;
-        this.grid = new Tile[rows][cols];
+        grid = new Tile[rows][cols];
         initializeBoard();
     }
 
-    /**
-     * Initialize the board with tiles. Must be implemented by subclasses.
-     */
+    // Each game should fill the board how it wants here
     protected abstract void initializeBoard();
 
-    /**
-     * Check if a position is valid within the board boundaries.
-     * @param row Row position
-     * @param col Column position
-     * @return true if position is valid, false otherwise
-     */
     public boolean isValidPosition(int row, int col) {
-        return row >= 0 && row < rows && col >= 0 && col < cols;
+        boolean rowOk = row >= 0 && row < rows;
+        boolean colOk = col >= 0 && col < cols;
+        return rowOk && colOk;
     }
 
-    /**
-     * Get the tile at a specific position.
-     * @param row Row position
-     * @param col Column position
-     * @return The tile at the specified position
-     */
     public Tile getTile(int row, int col) {
-        if (!isValidPosition(row, col)) {
-            throw new IllegalArgumentException("Invalid position: " + row + ", " + col);
+        if(!isValidPosition(row, col)) {
+            throw new IllegalArgumentException("No tile there! Position (" + row + "," + col + ") is invalid.");
         }
         return grid[row][col];
     }
 
-    /**
-     * Set a tile at a specific position.
-     * @param row Row position
-     * @param col Column position
-     * @param tile The tile to place
-     */
     public void setTile(int row, int col, Tile tile) {
-        if (!isValidPosition(row, col)) {
-            throw new IllegalArgumentException("Invalid position: " + row + ", " + col);
+        if(!isValidPosition(row, col)) {
+            throw new IllegalArgumentException("Can't set tile: (" + row + "," + col + ") out of bounds!");
         }
         grid[row][col] = tile;
     }
 
-    /**
-     * Get the number of rows in the board.
-     * @return Number of rows
-     */
     public int getRows() {
         return rows;
     }
 
-    /**
-     * Get the number of columns in the board.
-     * @return Number of columns
-     */
     public int getCols() {
         return cols;
     }
 
-    /**
-     * Render the board as a string. Must be implemented by subclasses.
-     * @return String representation of the board
-     */
+    // Your turn! Show us the board on screen (or console).
     public abstract String render();
 
-    /**
-     * Check if the game is in a winning state. Must be implemented by subclasses.
-     * @return true if the game is won, false otherwise
-     */
+    // When is the game done? Define 'game over' here.
     public abstract boolean isGameOver();
 
-    /**
-     * Reset the board to its initial state.
-     */
+    // Reset board to starting config.
     public void reset() {
         initializeBoard();
+    }
+
+    // Just a friendly heads-up about the board size
+    public void printBoardInfo() {
+        System.out.println("Board size is " + rows + " rows by " + cols + " columns. Play on!");
     }
 }

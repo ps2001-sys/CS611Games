@@ -6,32 +6,33 @@ import a3.QuoridorGame;
 
 /**
  * Main menu for the CS611 Games project.
- * Provides a unified interface for selecting between three different turn-based games:
- * - Sliding Puzzle (Assignment 1)
- * - Dots & Boxes (Assignment 2)
- * - Quoridor (Assignment 3)
+ * Gives players a simple way to pick from three different turn-based games:
+ *  - Sliding Puzzle (A1)
+ *  - Dots & Boxes (A2)
+ *  - Quoridor (A3)
  *
- * The menu also allows toggling color display for enhanced visual feedback.
+ * Also lets you toggle color display on/off for a nicer look or simpler console.
  *
- * Author: Zhuojun Lyu and Priyanshu Singh
- * Date: 2025-01-05
- * Modified: 2025-01-06 - Added Quoridor game option
+ * Written by Zhuojun Lyu & Priyanshu Singh, 2025-01-05
+ * Updated 2025-01-06 to add Quoridor support
  */
 public class Menu {
     private final TextUI ui = new TextUI();
 
     /**
-     * Starts the menu and handles user choices until they quit.
-     * Demonstrates the extensibility of our game framework by seamlessly
-     * integrating multiple turn-based games.
+     * Starts the main menu loop.
+     * Keeps asking until the player decides to quit.
+     *
+     * Demo of how we can easily plug in different games,
+     * all sharing one neat user interface.
      */
     public void start() {
         ui.println(ui.bold("╔════════════════════════════════════╗"));
         ui.println(ui.bold("║         CS611 GAME SUITE           ║"));
         ui.println(ui.bold("║    Turn-Based Strategy Games       ║"));
         ui.println(ui.bold("╚════════════════════════════════════╝"));
-        ui.println("\nWelcome! This suite contains three turn-based games.");
-        ui.println("Each game demonstrates different aspects of our extensible framework.\n");
+        ui.println("\nWelcome! This suite packs three different turn-based games.");
+        ui.println("Each highlights how awesome and flexible our game framework is.\n");
 
         while (true) {
             ui.println("\n" + ui.cyan("═══ Main Menu ═══"));
@@ -63,32 +64,33 @@ public class Menu {
                     break;
 
                 case "4":
-                    boolean newColorSetting = !ui.isColor();
-                    ui.setColor(newColorSetting);
+                    boolean enableColors = !ui.isColor();
+                    ui.setColor(enableColors);
                     ui.println("\n" + ui.bold("Color display is now " +
-                            (newColorSetting ? ui.green("ENABLED") : ui.yellow("DISABLED")) + "."));
-                    if (newColorSetting) {
-                        ui.println("Colors will enhance game visibility and player distinction.");
+                            (enableColors ? ui.green("ENABLED") : ui.yellow("DISABLED")) + "."));
+                    if (enableColors) {
+                        ui.println("Colors make the game easier to read and more fun!");
                     } else {
-                        ui.println("Plain text mode activated for better compatibility.");
+                        ui.println("Plain mode activated for classic text-only vibes.");
                     }
                     break;
 
                 case "5":
                     ui.println("\n" + ui.bold("Global Statistics"));
-                    ui.println("Feature coming soon - will display aggregate stats across all games.");
+                    ui.println("This feature is cooking and will show your overall stats soon.");
                     break;
 
                 case "q":
                 case "quit":
                 case "exit":
-                    ui.println("\n" + ui.bold("Thank you for playing!"));
-                    ui.println("Your game statistics have been saved.");
-                    ui.println("Goodbye!\n");
+                    ui.println("\n" + ui.bold("Thanks for playing!"));
+                    ui.println("Your progress and stats are safely saved.");
+                    ui.println("See you next time!\n");
                     return;
 
                 default:
-                    ui.println(ui.red("\n✗ Invalid choice. Please select 1, 2, 3, 4, 5, or q."));
+                    ui.println(ui.red("\n✗ Oops! That's not a valid option. Try 1, 2, 3, 4, 5, or q."));
+                    break;
             }
         }
     }
